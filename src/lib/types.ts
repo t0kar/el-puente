@@ -1,16 +1,18 @@
 export type Mark = "green" | "yellow" | "pink" | "blue";
+/** course level; content without one is A1.1 */
+export type Level = "A1.1" | "A1.2";
 
-export interface Topic { k: string; t: string; hr: string; mark: Mark; v: string }
+export interface Topic { k: string; t: string; hr: string; mark: Mark; v: string; lvl?: Level }
 export interface Card { id: string; T: string; es: string; hr: string; u: string }
 
 export type StemType = "o-ue" | "e-ie" | "e-i" | "u-ue";
-export interface Verb { inf: string; hr: string; type?: StemType; refl?: boolean; irr?: string[]; note?: string; u?: string; _imp?: boolean }
+export interface Verb { inf: string; hr: string; type?: StemType; refl?: boolean; irr?: string[]; note?: string; u?: string; lvl?: Level; _imp?: boolean }
 
-/** [sentence with ___, options, correct index, explanation (hr), tag or update id] */
-export type Rule = [string, string[], number, string, (number | string)?];
+/** [sentence with ___, options, correct index, explanation (hr), tag or update id, level] */
+export type Rule = [string, string[], number, string, (number | string)?, Level?];
 
-export interface Story { id: string; g: string; t: string; hr: string; text: string; u?: string }
-export interface Sheet { t: string; mark: Mark; html: string; u?: string }
+export interface Story { id: string; g: string; t: string; hr: string; text: string; u?: string; lvl?: Level }
+export interface Sheet { t: string; mark: Mark; html: string; u?: string; lvl?: Level }
 
 export interface CardState { i: number; e: number; r: number; l: number; d: number; t: number }
 
@@ -23,13 +25,20 @@ export interface Settings {
   goal: number;
   tips: boolean;
   voice: string;
+  theme: "auto" | "light" | "dark";
+  autoplay: boolean;
+  levels: "a11" | "a12" | "mix";
 }
+
+/** a word the user added; `del` is a tombstone so deletions survive sync */
+export interface CustomWord { es: string; hr: string; t: number; del?: boolean }
 
 export interface AppState {
   cards: Record<string, CardState>;
   days: Record<string, number>;
   best: Record<string, number>;
   stories: Record<string, number>;
+  custom: Record<string, CustomWord>;
   newDay: { d: string; n: number };
   settings: Settings;
   updatedAt: number;

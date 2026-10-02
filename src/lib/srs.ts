@@ -1,4 +1,4 @@
-import { CARDS } from "./cards";
+import { cards } from "./cards";
 import { getState, update } from "./store";
 import type { Card } from "./types";
 import { DAY, todayKey } from "./util";
@@ -33,16 +33,16 @@ export function schedule(id: string, rating: 1 | 2 | 3 | 4) {
     st.cards[id] = s;
   });
 }
-export const cardsFor = (topics?: string[] | null) => (topics && topics.length ? CARDS.filter(c => topics.includes(c.T)) : CARDS);
+export const cardsFor = (topics?: string[] | null) => (topics && topics.length ? cards().filter(c => topics.includes(c.T)) : cards());
 export function dueCards(topics?: string[] | null) { const now = Date.now(); return cardsFor(topics).filter(c => isDue(c.id, now)).sort((a, b) => sGet(a.id).d - sGet(b.id).d); }
 /** unseen cards; material from the newest class comes first */
 export function newCards(topics?: string[] | null) { return cardsFor(topics).filter(c => !sGet(c.id)).sort((x, y) => (y.u || "").localeCompare(x.u || "")); }
 export function hardCards(): Card[] {
-  return CARDS.filter(c => { const s = sGet(c.id); return s && (s.l >= 1 || s.e < 2.2); })
+  return cards().filter(c => { const s = sGet(c.id); return s && (s.l >= 1 || s.e < 2.2); })
     .sort((x, y) => sGet(y.id).l - sGet(x.id).l || sGet(x.id).e - sGet(y.id).e);
 }
 export function mastery(k: string) {
-  const cs = CARDS.filter(c => c.T === k);
+  const cs = cards().filter(c => c.T === k);
   let sum = 0, nw = 0, due = 0; const now = Date.now();
   for (const c of cs) { const s = sGet(c.id); if (!s) { nw++; continue; } sum += Math.min(1, s.i / 21); if (s.d <= now) due++; }
   return { pct: cs.length ? Math.round((100 * sum) / cs.length) : 0, nw, due, n: cs.length };
@@ -55,6 +55,7 @@ export function previewIntervals(id: string) {
 }
 export function totals() {
   let seen = 0, learned = 0, mastered = 0;
-  for (const c of CARDS) { const s = sGet(c.id); if (!s) continue; seen++; if (s.i >= 1) learned++; if (s.i >= 21) mastered++; }
-  return { seen, learned, mastered, total: CARDS.length };
+  const all = cards();
+  for (const c of all) { const s = sGet(c.id); if (!s) continue; seen++; if (s.i >= 1) learned++; if (s.i >= 21) mastered++; }
+  return { seen, learned, mastered, total: all.length };
 }

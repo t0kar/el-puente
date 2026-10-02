@@ -1,7 +1,8 @@
 import { useEffect, useState } from "react";
-import { NavCtx, ICONS, Logo, type ViewName } from "./components/ui";
+import { NavCtx, ICONS, IconFlame, Logo, type ViewName } from "./components/ui";
 import { Runner } from "./components/Runner";
-import { setSetting, streak, useAppState, xpToday } from "./lib/store";
+import { streak, useAppState, xpToday } from "./lib/store";
+import type { Settings as SettingsT } from "./lib/types";
 import { firebaseConfigured, login } from "./lib/firebase";
 import type { SessionSpec } from "./lib/types";
 import { Home } from "./views/Home";
@@ -21,6 +22,22 @@ const initialView = (): ViewName => {
   try { const v = localStorage.getItem(VIEW_KEY); if (v && TABS.some(t => t[0] === v)) return v as ViewName; } catch { /* ignore */ }
   return "hoy";
 };
+
+const DARK_MQ = typeof window !== "undefined" ? window.matchMedia("(prefers-color-scheme: dark)") : null;
+function applyTheme(theme: SettingsT["theme"]) {
+  const root = document.documentElement;
+  if (theme === "auto") delete root.dataset.theme; else root.dataset.theme = theme;
+  const dark = theme === "dark" || (theme === "auto" && !!DARK_MQ?.matches);
+  document.querySelector('meta[name="theme-color"]')?.setAttribute("content", dark ? "#14171f" : "#fbfaf5");
+}
+function useTheme(theme: SettingsT["theme"]) {
+  useEffect(() => {
+    applyTheme(theme);
+    if (theme !== "auto" || !DARK_MQ) return;
+    const f = () => applyTheme("auto");
+    DARK_MQ.addEventListener("change", f); return () => DARK_MQ.removeEventListener("change", f);
+  }, [theme]);
+}
 
 function LoginBanner() {
   const { user, authReady } = useSync();
@@ -43,6 +60,7 @@ export function App() {
   const [session, setSession] = useState<SessionSpec | null>(null);
   const [sessionKey, setSessionKey] = useState(0);
   useEffect(() => { document.body.classList.toggle("tips-off", !st.settings.tips); }, [st.settings.tips]);
+  useTheme(st.settings.theme);
   const go = (v: ViewName) => { setSession(null); setView(v); window.scrollTo({ top: 0 }); try { if (TABS.some(t => t[0] === v)) localStorage.setItem(VIEW_KEY, v); } catch { /* ignore */ } };
   const start = (s: SessionSpec) => { setSession(s); setSessionKey(k => k + 1); window.scrollTo({ top: 0 }); };
   const exitSession = () => { const back = (session?.back as ViewName) || view; setSession(null); setView(back); };
@@ -57,11 +75,9 @@ export function App() {
     <NavCtx.Provider value={{ go, start }}>
       <div className="wrap">
         <header className="top">
-          <button className="logo" style={{ background: "none", border: 0, padding: 0 }} onClick={() => go("hoy")}><Logo /><span>El puente</span></button>
+          <button className="logo" aria-label="Cruza el Puente · inicio" onClick={() => go("hoy")}><Logo /><span className="wordmark">Cruza <span className="brand">el Puente</span></span></button>
           <span className="spacer" />
-          <span className="pill" title="Racha (dani zaredom)">Racha <b>{streak(st)}</b></span>
-          <span className="pill" title="XP danas">XP <b>{xpToday(st)}</b></span>
-          <button className="tips-toggle" aria-pressed={st.settings.tips} title="Pomoć na hrvatskom: uključi / isključi" onClick={() => setSetting("tips", !st.settings.tips)}>HR</button>
+          <span className="pill daypill" title={`Racha: ${streak(st)} días · XP hoy: ${xpToday(st)}`}><span className="flame" data-on={xpToday(st) > 0 || undefined}><IconFlame /></span><b>{streak(st)}</b><span className="sep" aria-hidden="true" /><span className="xp"><b>{xpToday(st)}</b> XP</span></span>
           <button className={"icon-btn"} aria-current={view === "progreso" ? "page" : undefined} aria-label="Progreso" title="Progreso" onClick={() => go("progreso")}>{ICONS.progreso}</button>
           <button id="gear" className="icon-btn" aria-current={view === "ajustes" ? "page" : undefined} aria-label="Ajustes" title="Ajustes" onClick={() => go("ajustes")}>{ICONS.ajustes}</button>
         </header>

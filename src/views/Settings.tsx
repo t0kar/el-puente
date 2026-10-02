@@ -2,7 +2,9 @@ import { useEffect, useState, useSyncExternalStore, type ReactNode } from "react
 import { exportCode, importCode, resetProgress, setSetting, useSettings } from "../lib/store";
 import { esVoices, onVoices, pickVoice, speak, currentVoice } from "../lib/speech";
 import { firebaseConfigured, login, logout, onSync, syncInfo, syncNow, type SyncStatus } from "../lib/firebase";
-import { Seg } from "../components/ui";
+import { levelHasContent } from "../lib/level";
+import { customCards } from "../lib/cards";
+import { Seg, useNav } from "../components/ui";
 
 const SYNC_TXT: Record<SyncStatus, string> = { off: "Solo en este dispositivo", guest: "No has iniciado sesión", busy: "Guardando…", sync: "Sincronizado", error: "Sin conexión · se guarda localmente" };
 export const useSync = () => useSyncExternalStore(onSync, syncInfo);
@@ -71,7 +73,10 @@ function Backup() {
 
 export function Settings() {
   const s = useSettings();
+  const { go } = useNav();
   const [confirm, setConfirm] = useState(false);
+  const hasA12 = levelHasContent("A1.2");
+  const mine = customCards().length;
   return (
     <section className="view">
       <h1>Ajustes</h1>
@@ -80,9 +85,17 @@ export function Settings() {
         <Account />
         <details><summary>Copia de seguridad</summary><p className="hint">Rezervni način prijenosa bez prijave: kopiraj kod na jednom uređaju i učitaj ga na drugom. Spajanje ne briše ništa.</p><Backup /></details>
       </Group>
-      <Group title="Ayuda" mark="yellow">
-        <Row title="Pistas en croata" control={<Seg options={[[true, "Sí"], [false, "No"]]} value={s.tips} onChange={v => setSetting("tips", v)} />}>
-          Uključeno: hrvatska objašnjenja vidljiva su odmah. Isključeno: skrivaju se iza malog gumba HR pa ih otvoriš samo kad ne razumiješ. Isto radi gumb HR gore desno.
+      <Group title="Apariencia" mark="blue">
+        <Row title="Tema" control={<Seg label="Tema" options={[["auto", "Auto"], ["light", "Claro"], ["dark", "Oscuro"]]} value={s.theme} onChange={v => setSetting("theme", v)} />}>
+          Auto prati postavku uređaja (svijetlo danju, tamno noću ako je tako podešeno).
+        </Row>
+        <Row title="Traducción al croata" control={<Seg label="Traducción al croata" options={[[true, "Visible"], [false, "Al tocar"]]} value={s.tips} onChange={v => setSetting("tips", v)} />}>
+          Visible: hrvatska objašnjenja odmah su na ekranu. Al tocar: skrivena su iza male ikone prijevoda pa ih otvoriš samo kad ne razumiješ — više španjolskog, manje čitanja.
+        </Row>
+      </Group>
+      <Group title="Nivel" mark="yellow">
+        <Row title="Contenido" control={<Seg label="Nivel" options={[["a11", "A1.1"], ["a12", "A1.2", !hasA12], ["mix", "Ambos"]]} value={s.levels} onChange={v => setSetting("levels", v)} />}>
+          Koje gradivo vježbaš: samo A1.1, samo A1.2 ili oboje izmiješano. Vrijedi za kartice, glagole, pravila, priče i chuletu. Tvoje riječi (Mis palabras) uvijek su uključene.{!hasA12 && " A1.2 gradivo još nije dodano."}
         </Row>
       </Group>
       <Group title="Tarjetas" mark="green">
@@ -94,6 +107,9 @@ export function Settings() {
         </Row>
         <Row title="Palabras nuevas por día" control={<Seg options={[[10, "10"], [20, "20"], [40, "40"]]} value={s.newPerDay} onChange={v => setSetting("newPerDay", v)} />}>
           Koliko novih kartica dobiješ dnevno. Više = brže kroz gradivo, ali više ponavljanja idućih dana. Gradivo sa zadnjeg sata uvijek dolazi prvo.
+        </Row>
+        <Row title="Mis palabras" control={<button className="btn ghost" onClick={() => { go("tarjetas"); window.setTimeout(() => document.getElementById("mis-palabras")?.scrollIntoView({ behavior: "smooth", block: "start" }), 50); }}>{mine ? `Editar (${mine})` : "Añadir"}</button>}>
+          Dodaj vlastite riječi (npr. s nastave ili iz pjesme). Postaju zasebna tema i ponavljaju se kao i ostale kartice.
         </Row>
       </Group>
       <Group title="Verbos" mark="pink">
@@ -107,6 +123,9 @@ export function Settings() {
         </Row>
       </Group>
       <Group title="Voz" mark="blue">
+        <Row title="Reproducir automáticamente" control={<Seg options={[[false, "No"], [true, "Sí"]]} value={s.autoplay} onChange={v => setSetting("autoplay", v)} />}>
+          Isključeno: zvuk se pušta samo kad dodirneš zvučnik. Uključeno: riječi i odgovori izgovaraju se sami.
+        </Row>
         <Row title="Velocidad" control={<Seg options={[[false, "Normal"], [true, "Lenta"]]} value={s.slow} onChange={v => setSetting("slow", v)} />}>Lenta pomaže kod dugih rečenica, brojeva i diktata.</Row>
         <div className="stack">
           <div className="row" style={{ justifyContent: "space-between" }}><b>Voz</b><button className="btn ghost" onClick={() => speak("¡Hola! Me llamo Paco y soy un pulpo.")}>Probar</button></div>

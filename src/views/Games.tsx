@@ -1,8 +1,8 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { CARDS } from "../lib/cards";
+import { cards } from "../lib/cards";
 import { addXP, update, useAppState } from "../lib/store";
 import { gameSessions, vocabMC } from "../lib/questions";
-import { speak } from "../lib/speech";
+import { autoSpeak } from "../lib/speech";
 import { pick, shuffle } from "../lib/util";
 import type { Card, Mark } from "../lib/types";
 import { Hint, useNav } from "../components/ui";
@@ -36,7 +36,7 @@ export function Games() {
 
 function pairSet(): Card[] {
   const out: Card[] = [], seen = new Set<string>();
-  for (const c of shuffle(CARDS.filter(c => c.es.length < 28 && c.hr.length < 30))) { if (seen.has(c.hr)) continue; seen.add(c.hr); out.push(c); if (out.length === 6) break; }
+  for (const c of shuffle(cards().filter(c => c.es.length < 28 && c.hr.length < 30))) { if (seen.has(c.hr)) continue; seen.add(c.hr); out.push(c); if (out.length === 6) break; }
   return out;
 }
 export function Pairs() {
@@ -73,7 +73,7 @@ export function Pairs() {
       <p>Izquierda: español. Derecha: croata.</p>
       <div className="pairs">
         {left.map((c, i) => [
-          <button key={"L" + c.id} className={cls(c.id, "L")} onClick={() => { speak(c.es); setSelL(c.id); }}>{c.es}</button>,
+          <button key={"L" + c.id} className={cls(c.id, "L")} onClick={() => { autoSpeak(c.es); setSelL(c.id); }}>{c.es}</button>,
           <button key={"R" + right[i].id} className={cls(right[i].id, "R")} onClick={() => setSelR(right[i].id)}>{right[i].hr}</button>,
         ])}
       </div>
@@ -85,7 +85,7 @@ export function Rush() {
   const { go } = useNav();
   const [run, setRun] = useState(0);
   const [left, setLeft] = useState(60), [score, setScore] = useState(0), [missed, setMissed] = useState<Card[]>([]);
-  const [q, setQ] = useState(() => vocabMC(pick(CARDS)));
+  const [q, setQ] = useState(() => vocabMC(pick(cards())));
   const [chosen, setChosen] = useState<number | null>(null);
   const [over, setOver] = useState<{ rec: boolean } | null>(null);
   const best = useAppState().best.rush || 0;
@@ -100,10 +100,10 @@ export function Rush() {
     if (chosen !== null || over) return;
     setChosen(i);
     const ok = i === q.correct;
-    if (ok) { setScore(s => s + 1); addXP(1); } else { setMissed(m => [...m, CARDS.find(c => c.es === q.prompt)!]); setLeft(l => Math.max(0, l - 3)); }
-    window.setTimeout(() => { setChosen(null); setQ(vocabMC(pick(CARDS))); }, ok ? 250 : 900);
+    if (ok) { setScore(s => s + 1); addXP(1); } else { setMissed(m => [...m, cards().find(c => c.es === q.prompt)!]); setLeft(l => Math.max(0, l - 3)); }
+    window.setTimeout(() => { setChosen(null); setQ(vocabMC(pick(cards()))); }, ok ? 250 : 900);
   };
-  const again = () => { setRun(r => r + 1); setLeft(60); setScore(0); setMissed([]); setOver(null); setChosen(null); setQ(vocabMC(pick(CARDS))); };
+  const again = () => { setRun(r => r + 1); setLeft(60); setScore(0); setMissed([]); setOver(null); setChosen(null); setQ(vocabMC(pick(cards()))); };
   if (over) return (
     <section className="view"><div className="qcard done pop">
       <div className="hand">{over.rec ? "¡Nuevo récord!" : "¡Tiempo!"}</div><div className="score">{score}</div>

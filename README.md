@@ -1,4 +1,4 @@
-# El puente
+# Cruza el Puente
 
 Aplikacija za ponavljanje španjolskog (A1.1 → A1.2): kartice s razmaknutim ponavljanjem, glagoli kao formule, brojevi, sat, diktat, priče s prazninama i gramatika na jednom mjestu.
 

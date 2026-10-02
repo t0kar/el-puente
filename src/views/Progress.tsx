@@ -1,7 +1,7 @@
-import { TOPICS } from "../content/topics";
 import { useAppState, streak } from "../lib/store";
 import { mastery, totals, sGet } from "../lib/srs";
-import { CARDS } from "../lib/cards";
+import { cards, customCards, MY_TOPIC } from "../lib/cards";
+import { activeTopics } from "../lib/level";
 import { cardsSession } from "../lib/questions";
 import { DAY, todayKey } from "../lib/util";
 import { Hint, useNav } from "../components/ui";
@@ -35,8 +35,8 @@ export function Progress() {
   const week = Array.from({ length: 7 }, (_, i) => st.days[todayKey(Date.now() - i * DAY)] || 0).reduce((a, b) => a + b, 0);
   const activeDays = Array.from({ length: 7 }, (_, i) => st.days[todayKey(Date.now() - i * DAY)] || 0).filter(Boolean).length;
   const tomorrow = Date.now() + DAY;
-  const dueTomorrow = CARDS.filter(c => { const s = sGet(c.id); return s && s.d <= tomorrow; }).length;
-  const topics = TOPICS.map(T => ({ T, m: mastery(T.k) })).sort((a, b) => a.m.pct - b.m.pct);
+  const dueTomorrow = cards().filter(c => { const s = sGet(c.id); return s && s.d <= tomorrow; }).length;
+  const topics = [...activeTopics(), ...(customCards().length ? [MY_TOPIC] : [])].map(T => ({ T, m: mastery(T.k) })).sort((a, b) => a.m.pct - b.m.pct);
   return (
     <section className="view">
       <h1><span className="mark blue">Progreso</span></h1>

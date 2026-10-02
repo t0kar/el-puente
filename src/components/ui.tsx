@@ -8,23 +8,26 @@ export type ViewName = "hoy" | "tarjetas" | "verbos" | "juegos" | "historias" | 
 export const NavCtx = createContext<{ go: (v: ViewName) => void; start: (s: SessionSpec) => void }>({ go: () => {}, start: () => {} });
 export const useNav = () => useContext(NavCtx);
 
-// ---------- Croatian hint: visible, or collapsed behind an "HR" button when tips are off ----------
+// ---------- Croatian hint: shown inline, or (setting "Al tocar") behind a small translate icon ----------
+const IconTranslate = () => (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M4 5h8M8 3v2M10.5 5c-.8 3.6-3.2 6.5-6.5 8" /><path d="M6 9c1.2 2 3 3.5 5 4.4" /><path d="m13 21 4-9 4 9M14.4 18h5.2" /></svg>
+);
 export function Hint({ children, html, block }: { children?: ReactNode; html?: string; block?: boolean }) {
   const [open, setOpen] = useState(false);
   const Tag = block ? "div" : "span";
+  const toggle = (e: React.MouseEvent) => { e.stopPropagation(); setOpen(o => !o); };
   return (
     <Tag className={"hrtip" + (block ? " block" : "") + (open ? " open" : "")}>
-      <button type="button" className="hrbtn" aria-expanded={open} aria-label="Prikaži pomoć na hrvatskom" title="Pomoć na hrvatskom"
-        onClick={e => { e.stopPropagation(); setOpen(o => !o); }}>HR</button>
-      {html ? <span className="hrtxt" dangerouslySetInnerHTML={{ __html: html }} /> : <span className="hrtxt">{children}</span>}
+      <button type="button" className="hrbtn" aria-expanded={open} aria-label={open ? "Ocultar croata" : "Ver en croata"} title="Ver en croata" onClick={toggle}><IconTranslate /></button>
+      {html ? <span className="hrtxt" onClick={open ? toggle : undefined} dangerouslySetInnerHTML={{ __html: html }} /> : <span className="hrtxt" onClick={open ? toggle : undefined}>{children}</span>}
     </Tag>
   );
 }
 
-export function Seg<T extends string | number | boolean>({ options, value, onChange, label }: { options: [T, string][]; value: T; onChange: (v: T) => void; label?: string }) {
+export function Seg<T extends string | number | boolean>({ options, value, onChange, label }: { options: [T, string, boolean?][]; value: T; onChange: (v: T) => void; label?: string }) {
   return (
     <div className="seg" role="group" aria-label={label}>
-      {options.map(([v, t]) => <button key={String(v)} type="button" aria-pressed={v === value} onClick={() => onChange(v)}>{t}</button>)}
+      {options.map(([v, t, off]) => <button key={String(v)} type="button" aria-pressed={v === value} disabled={off} onClick={() => onChange(v)}>{t}</button>)}
     </div>
   );
 }
@@ -86,7 +89,7 @@ export function Ring({ value, goal }: { value: number; goal: number }) {
   return (
     <svg className="ring" viewBox="0 0 100 100" role="img" aria-label={`Objetivo diario ${value} de ${goal} XP`}>
       <circle cx="50" cy="50" r="40" fill="none" stroke="var(--paper-2)" strokeWidth="10" />
-      <circle cx="50" cy="50" r="40" fill="none" stroke="var(--ok)" strokeWidth="10" strokeLinecap="round" strokeDasharray={`${C * pct} ${C}`} transform="rotate(-90 50 50)" />
+      <circle cx="50" cy="50" r="40" fill="none" stroke={pct >= 1 ? "var(--ok)" : "var(--brand)"} opacity={pct ? 1 : 0} strokeWidth="10" strokeLinecap="round" strokeDasharray={`${C * pct} ${C}`} transform="rotate(-90 50 50)" />
       <text x="50" y="52" textAnchor="middle">{value}</text>
       <text className="lbl" x="50" y="68" textAnchor="middle">de {goal} XP</text>
     </svg>
@@ -112,5 +115,8 @@ export const ICONS: Record<string, ReactNode> = {
   ajustes: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="3" /><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z" /></svg>,
 };
 export const Logo = () => (
-  <svg viewBox="0 0 48 48" aria-hidden="true"><path d="M3 30h42" stroke="var(--ink)" strokeWidth="3" strokeLinecap="round" /><path d="M6 30c4-12 10-18 18-18s14 6 18 18" fill="none" stroke="var(--ink)" strokeWidth="3" strokeLinecap="round" /><path d="M12 30v-8M18 30v-14M24 30v-17M30 30v-14M36 30v-8" stroke="var(--ink)" strokeWidth="2" /><path d="M2 38c4-3 8-3 11 0s8 3 11 0 8-3 11 0 8 3 11 0" fill="none" stroke="var(--hl-blue)" strokeWidth="3" strokeLinecap="round" /></svg>
+  <svg viewBox="0 0 48 48" aria-hidden="true"><path d="M12 30v-8M18 30v-14M24 30v-17M30 30v-14M36 30v-8" stroke="var(--ink)" strokeWidth="2" /><path d="M6 30c4-12 10-18 18-18s14 6 18 18" fill="none" stroke="var(--brand)" strokeWidth="3.5" strokeLinecap="round" /><path d="M3 30h42" stroke="var(--ink)" strokeWidth="3" strokeLinecap="round" /><path d="M2 38c4-3 8-3 11 0s8 3 11 0 8-3 11 0 8 3 11 0" fill="none" stroke="var(--hl-blue)" strokeWidth="3" strokeLinecap="round" /></svg>
+);
+export const IconFlame = () => (
+  <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2c.6 3.2-1 5-2.6 6.8C8 10.4 6.5 12 6.5 14.8A5.5 5.5 0 0 0 12 20.5a5.5 5.5 0 0 0 5.5-5.6c0-2.3-1-4.1-2.3-5.4.1 1.5-.4 2.8-1.6 3.4.4-3.9-.7-8.2-1.6-10.9z" /></svg>
 );

@@ -53,3 +53,17 @@ Oblici se računaju automatski (osnova + nastavak, promjena samoglasnika, zamjen
 ## 5. Gramatika → `sheets.ts`, priče → `stories.ts`
 
 Priče: praznina je `{opcija|točna*|opcija::objašnjenje}`.
+
+## 6. Razina (A1.1 / A1.2)
+
+Sve bez oznake je **A1.1**. Novo A1.2 gradivo označi s `lvl: "A1.2"`:
+
+```ts
+{k:"ropa", t:"La ropa", hr:"odjeća", mark:"blue", lvl:"A1.2", v:`...`},   // tema (sve riječi u njoj)
+{ inf: "llevar", hr: "nositi", lvl: "A1.2" },                              // glagol
+{ id:"s9", ..., lvl: "A1.2" },                                             // priča / chuleta isto
+["Mañana ___ a comer.", ["voy","va"], 0, "ir a + infinitiv.", "2026-10-07", "A1.2"],  // pravilo: 6. polje
+```
+
+U Ajustes → Nivel korisnik bira A1.1, A1.2 ili Ambos. Opcija A1.2 je onemogućena dok ne postoji barem jedna stvar označena s A1.2.
+

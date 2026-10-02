@@ -3,8 +3,8 @@ import type { AppState, Settings } from "./types";
 import { todayKey, DAY } from "./util";
 
 const LS_KEY = "el-puente-v1";
-export const defaultSettings = (): Settings => ({ dir: "mix", type: false, newPerDay: 20, slow: false, verbMode: "type", goal: 60, tips: true, voice: "" });
-export const defaultState = (): AppState => ({ cards: {}, days: {}, best: {}, stories: {}, newDay: { d: "", n: 0 }, settings: defaultSettings(), updatedAt: 0, resetAt: 0 });
+export const defaultSettings = (): Settings => ({ dir: "mix", type: false, newPerDay: 20, slow: false, verbMode: "type", goal: 60, tips: true, voice: "", theme: "auto", autoplay: false, levels: "mix" });
+export const defaultState = (): AppState => ({ cards: {}, days: {}, best: {}, stories: {}, custom: {}, newDay: { d: "", n: 0 }, settings: defaultSettings(), updatedAt: 0, resetAt: 0 });
 
 function normalize(s: Partial<AppState> | null | undefined): AppState {
   const st = Object.assign(defaultState(), s || {});
@@ -13,6 +13,7 @@ function normalize(s: Partial<AppState> | null | undefined): AppState {
   const cards: AppState["cards"] = {};
   for (const [k, v] of Object.entries(st.cards || {})) { const nk = k.replace(/^\d+:/, ""); if (!cards[nk] || (v.t || 0) > (cards[nk].t || 0)) cards[nk] = v; }
   st.cards = cards;
+  st.custom = st.custom || {};
   return st;
 }
 
@@ -30,7 +31,7 @@ function persistLocal() { try { localStorage.setItem(LS_KEY, JSON.stringify(stat
 
 /** Apply a change. The updater receives a shallow copy it may mutate. */
 export function update(fn: (s: AppState) => void, opts: { remote?: boolean } = {}) {
-  const next: AppState = { ...state, cards: { ...state.cards }, days: { ...state.days }, best: { ...state.best }, stories: { ...state.stories }, settings: { ...state.settings }, newDay: { ...state.newDay } };
+  const next: AppState = { ...state, cards: { ...state.cards }, days: { ...state.days }, best: { ...state.best }, stories: { ...state.stories }, custom: { ...state.custom }, settings: { ...state.settings }, newDay: { ...state.newDay } };
   fn(next);
   next.updatedAt = Date.now();
   state = next;
@@ -64,6 +65,9 @@ export function mergeStates(a0: AppState, b0: AppState): AppState {
   for (const [k, v] of Object.entries(b.best)) out.best[k] = k.endsWith("time") ? Math.min(out.best[k] ?? Infinity, v) : Math.max(out.best[k] || 0, v);
   out.stories = { ...a.stories };
   for (const [k, v] of Object.entries(b.stories)) out.stories[k] = Math.max(out.stories[k] || 0, v);
+  // custom words are content, not progress: a reset on one side doesn't remove them
+  out.custom = { ...(a0.custom || {}) };
+  for (const [k, v] of Object.entries(b0.custom || {})) if (!out.custom[k] || v.t > out.custom[k].t) out.custom[k] = v;
   const newer = (b.updatedAt || 0) > (a.updatedAt || 0) ? b : a;
   out.settings = { ...defaultSettings(), ...newer.settings };
   out.newDay = newer.newDay;
@@ -81,7 +85,7 @@ export function streak(s = state) {
   return n;
 }
 export function resetProgress() {
-  update(s => { const keep = s.settings; Object.assign(s, defaultState()); s.settings = keep; s.resetAt = Date.now(); });
+  update(s => { const keep = s.settings, custom = s.custom; Object.assign(s, defaultState()); s.settings = keep; s.custom = custom; s.resetAt = Date.now(); });
 }
 export const exportCode = () => btoa(unescape(encodeURIComponent(JSON.stringify(state))));
 export function importCode(code: string) {

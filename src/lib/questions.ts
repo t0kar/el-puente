@@ -1,7 +1,5 @@
-import { CARDS, TOPIC_BY_K, LAST_UPDATE, lastClassCards } from "./cards";
-import { RULES } from "../content/rules";
-import { VERBS } from "../content/verbs";
-import { STORIES } from "../content/stories";
+import { cards, TOPIC_BY_K, LAST_UPDATE, lastClassCards } from "./cards";
+import { activeRules, activeStories, activeVerbs } from "./level";
 import { getState } from "./store";
 import { conj, imperative, verbGroup, PERSONS, ENDINGS } from "./verbs";
 import { num, timeES } from "./numbers";
@@ -14,7 +12,7 @@ export function flipQ(card: Card, cram = false): FlipQ {
   const dir = d === "mix" ? (Math.random() < 0.5 ? "es" : "hr") : d;
   return { kind: "flip", card, dir, cram, tag: TOPIC_BY_K[card.T].t };
 }
-export function vocabMC(card: Card, pool: Card[] = CARDS): MCQ {
+export function vocabMC(card: Card, pool: Card[] = cards()): MCQ {
   const others = shuffle(pool.filter(c => c.id !== card.id && c.hr !== card.hr)).slice(0, 3);
   const opts = shuffle([card, ...others]);
   return { kind: "mc", tag: "¿Qué significa?", prompt: card.es, speak: card.es, speakPrompt: card.es, options: opts.map(o => o.hr), correct: opts.indexOf(card), explain: card.es + " = " + card.hr };
@@ -80,9 +78,9 @@ export function timeQ(): MCQ {
 
 // ---- dictation: hear a sentence, type it ----
 function sentencePool(): string[] {
-  const fromCards = CARDS.filter(c => c.es.split(" ").length >= 3 && !c.es.includes("...") && !/[=≠/]/.test(c.es)).map(c => c.es.replace(/\s*\([^)]*\)/g, ""));
-  const fromRules = RULES.map(r => r[0].replace("___", r[1][r[2]])).filter(s => !s.includes("(") && !s.includes("—"));
-  const fromStories = STORIES.flatMap(s => s.text.replace(/\{([^}]+)\}/g, (_, g: string) => g.split("::")[0].split("|").find(o => o.endsWith("*"))!.slice(0, -1))
+  const fromCards = cards().filter(c => c.es.split(" ").length >= 3 && !c.es.includes("...") && !/[=≠/]/.test(c.es)).map(c => c.es.replace(/\s*\([^)]*\)/g, ""));
+  const fromRules = activeRules().map(r => r[0].replace("___", r[1][r[2]])).filter(s => !s.includes("(") && !s.includes("—"));
+  const fromStories = activeStories().flatMap(s => s.text.replace(/\{([^}]+)\}/g, (_, g: string) => g.split("::")[0].split("|").find(o => o.endsWith("*"))!.slice(0, -1))
     .split(/(?<=[.!?])\s+/).filter(x => { const n = x.split(" ").length; return n >= 4 && n <= 10 && !x.includes("—") && !x.includes("«"); }));
   return [...new Set([...fromCards, ...fromRules, ...fromStories])];
 }
@@ -103,23 +101,24 @@ function interleave(main: Question[], others: Question[]) {
   return [...out, ...o];
 }
 export function dailySession(): SessionSpec {
-  let cards = srsQueue(null, 14, Math.min(newLeft(), 6));
-  if (!cards.length) cards = shuffle(CARDS).slice(0, 8).map(c => flipQ(c, true));
-  const others = [...shuffle(VERBS).slice(0, 4).map(v => verbQ(v)), ...shuffle(RULES).slice(0, 3).map(ruleQ), numberQ(), timeQ(), dictationQ()];
-  return { title: "Repaso del día", questions: interleave(cards, others), again: dailySession, back: "hoy" };
+  let qs = srsQueue(null, 14, Math.min(newLeft(), 6));
+  if (!qs.length) qs = shuffle(cards()).slice(0, 8).map(c => flipQ(c, true));
+  const others = [...shuffle(activeVerbs()).slice(0, 4).map(v => verbQ(v)), ...shuffle(activeRules()).slice(0, 3).map(ruleQ), numberQ(), timeQ(), dictationQ()];
+  return { title: "Repaso del día", questions: interleave(qs, others), again: dailySession, back: "hoy" };
 }
 /** ~5 minutes before the next class: newest material + weakest cards + a little grammar */
 export function beforeClassSession(): SessionSpec {
   const last = lastClassCards();
   const lastIds = new Set(last.map(c => c.id));
   const hard = hardCards().filter(c => !lastIds.has(c.id)).slice(0, last.length ? 5 : 10);
-  const cards = [...shuffle(last).slice(0, 10), ...hard].map(c => flipQ(c, !!sGet(c.id)));
-  if (cards.length < 6) cards.push(...shuffle(cardsFor(null).filter(c => sGet(c.id))).slice(0, 8 - cards.length).map(c => flipQ(c, true)));
-  if (cards.length < 6) cards.push(...shuffle(CARDS).slice(0, 6).map(c => flipQ(c, true)));
+  const qs = [...shuffle(last).slice(0, 10), ...hard].map(c => flipQ(c, !!sGet(c.id)));
+  if (qs.length < 6) qs.push(...shuffle(cardsFor(null).filter(c => sGet(c.id))).slice(0, 8 - qs.length).map(c => flipQ(c, true)));
+  if (qs.length < 6) qs.push(...shuffle(cards()).slice(0, 6).map(c => flipQ(c, true)));
   const u = LAST_UPDATE?.id;
-  const verbs = (u ? VERBS.filter(v => v.u === u) : []).concat(shuffle(VERBS)).slice(0, 3).map(v => verbQ(v, "mc"));
-  const rules = (u ? RULES.filter(r => r[4] === u) : []).concat(shuffle(RULES)).slice(0, 3).map(ruleQ);
-  return { title: "Antes de clase", questions: interleave(cards, [...verbs, ...rules]), again: beforeClassSession, back: "hoy" };
+  const vs = activeVerbs(), rs = activeRules();
+  const verbs = (u ? vs.filter(v => v.u === u) : []).concat(shuffle(vs)).slice(0, 3).map(v => verbQ(v, "mc"));
+  const rules = (u ? rs.filter(r => r[4] === u) : []).concat(shuffle(rs)).slice(0, 3).map(ruleQ);
+  return { title: "Antes de clase", questions: interleave(qs, [...verbs, ...rules]), again: beforeClassSession, back: "hoy" };
 }
 export function cardsSession(topics: string[] | null, title = "Tarjetas", back = "tarjetas"): SessionSpec {
   let qs: Question[] = srsQueue(topics, 30, topics ? 15 : undefined);
@@ -132,8 +131,8 @@ export function verbSession(pool: Verb[], mode?: "type" | "mc", title = "Fórmul
 export const gameSessions = {
   numbers: (): SessionSpec => ({ title: "Números", questions: Array.from({ length: 10 }, () => numberQ()), again: gameSessions.numbers, back: "juegos" }),
   clock: (): SessionSpec => ({ title: "La hora", questions: Array.from({ length: 10 }, timeQ), again: gameSessions.clock, back: "juegos" }),
-  rules: (): SessionSpec => ({ title: "Reglas rápidas", questions: shuffle(RULES).slice(0, 12).map(ruleQ), again: gameSessions.rules, back: "juegos" }),
-  verbs: (): SessionSpec => ({ title: "Fórmula exprés", questions: Array.from({ length: 10 }, () => verbQ(pick(VERBS), "mc")), again: gameSessions.verbs, back: "juegos" }),
+  rules: (): SessionSpec => ({ title: "Reglas rápidas", questions: shuffle(activeRules()).slice(0, 12).map(ruleQ), again: gameSessions.rules, back: "juegos" }),
+  verbs: (): SessionSpec => ({ title: "Fórmula exprés", questions: Array.from({ length: 10 }, () => verbQ(pick(activeVerbs()), "mc")), again: gameSessions.verbs, back: "juegos" }),
   dictation: (): SessionSpec => ({ title: "Dictado", questions: Array.from({ length: 8 }, dictationQ), again: gameSessions.dictation, back: "juegos" }),
 };
 export { ENDINGS };

@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { VERBS } from "../content/verbs";
+import { activeVerbs } from "../lib/level";
 import { SHEETS } from "../content/sheets";
 import { setSetting, useSettings } from "../lib/store";
 import { verbGroup, verbBase } from "../lib/verbs";
@@ -16,12 +16,13 @@ export function Verbs() {
   const toast = useToast();
   const [sel, setSel] = useState<string[]>(["reg", "o-ue", "e-ie", "irr"]);
   const [vi, setVi] = useState(0);
+  const VERBS = activeVerbs();
   const pool = () => {
     let vs: Verb[] = VERBS.filter(v => sel.includes(verbGroup(v)) || (sel.includes("refl") && v.refl));
     if (sel.includes("imp")) vs = vs.concat(VERBS.filter(v => !v.irr && !v.type && !v.refl).map(v => ({ ...v, _imp: true })));
     return vs;
   };
-  const v = VERBS[vi], base = verbBase(v);
+  const v = VERBS[vi] || VERBS[0], base = verbBase(v);
   const expl = v.irr ? v.note || "Nepravilan: nauči napamet." : v.type ? `Promjena ${v.type.replace("-", "→")} u «čizmi» (yo, tú, él, ellos).` : v.refl ? "Refleksivni: zamjenica + pravilan glagol." : "Pravilan: osnova + nastavak.";
   const boot = SHEETS.find(s => s.t.includes("bota"));
   return (

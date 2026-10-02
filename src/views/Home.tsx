@@ -1,5 +1,5 @@
-import { TOPICS } from "../content/topics";
-import { CARDS, LAST_UPDATE, lastClassCards } from "../lib/cards";
+import { cards, customCards, LAST_UPDATE, lastClassCards, MY_TOPIC } from "../lib/cards";
+import { activeTopics } from "../lib/level";
 import { useAppState, xpToday, streak } from "../lib/store";
 import { dueCards, mastery, newCards, newLeft, sGet } from "../lib/srs";
 import { beforeClassSession, cardsSession, dailySession, flipQ } from "../lib/questions";
@@ -32,7 +32,7 @@ export function Home() {
         <div className="stack">
           <h1>{xp >= goal ? "¡Objetivo cumplido!" : "¡Hola! ¿Repasamos?"}</h1>
           <p className="hr">{has ? `Para hoy: ${due} tarjetas para repasar y ${nl} nuevas.` : "Empieza con el repaso del día: unos 10 minutos de tarjetas, verbos y juegos."}</p>
-          <div className="stats"><span className="pill">Racha <b>{streak(st)}</b> días</span><span className="pill">Palabras <b>{CARDS.length}</b></span></div>
+          <div className="stats"><span className="pill">Racha <b>{streak(st)}</b> días</span><span className="pill">Palabras <b>{cards().length}</b></span></div>
         </div>
       </div>
       <button className="btn primary big" onClick={() => start(dailySession())}>Repaso del día · 10 min</button>
@@ -58,7 +58,7 @@ export function Home() {
         <Hint>Klik = vježbaj temu</Hint>
       </div>
       <div className="lesson-list">
-        {TOPICS.map(T => {
+        {[...activeTopics(), ...(customCards().length ? [MY_TOPIC] : [])].map(T => {
           const m = mastery(T.k);
           return (
             <button key={T.k} className="lesson" onClick={() => start(cardsSession([T.k], T.t, "hoy"))}>

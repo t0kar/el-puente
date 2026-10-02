@@ -38,4 +38,6 @@ export function speak(text: string, slow?: boolean) {
     return true;
   } catch { return false; }
 }
+/** speech the user didn't ask for (new question, revealed answer): only when autoplay is on */
+export const autoSpeak = (text: string, slow?: boolean) => (getState().settings.autoplay ? speak(text, slow) : false);
 export const stopSpeech = () => { try { speechSynthesis.cancel(); } catch { /* ignore */ } };

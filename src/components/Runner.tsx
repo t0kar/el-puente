@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import type { FlipQ, MCQ, Question, SessionSpec, TilesQ, TypeQ } from "../lib/types";
 import { addXP, useSettings } from "../lib/store";
 import { schedule, sGet, previewIntervals } from "../lib/srs";
-import { speak } from "../lib/speech";
+import { autoSpeak, speak } from "../lib/speech";
 import { checkAnswer, wordDiff, type CheckRes } from "../lib/check";
 import { pick, shuffle } from "../lib/util";
 import { AccentBar, Clock, ConjGrid, Hint, IconSpeak, SpeakBtn, useNav } from "./ui";
@@ -31,7 +31,7 @@ function NextBtn({ onNext }: { onNext: () => void }) {
 const praise = () => pick(["¡Correcto!", "¡Muy bien!", "¡Eso es!", "¡Perfecto!", "¡Genial!"]);
 
 function After({ q, fb, onNext }: { q: Question; fb: Fb; onNext: () => void }) {
-  useEffect(() => { if (q.speak) speak(q.speak); }, [q]);
+  useEffect(() => { if (q.speak) autoSpeak(q.speak); }, [q]);
   return <>
     <Feedback fb={fb} />
     {q.grid && <ConjGrid verb={q.grid.verb} highlight={q.grid.person} />}
@@ -43,7 +43,7 @@ type QProps<T> = { q: T; onResult: (ok: boolean, gain: number) => void; onNext: 
 
 function Prompt({ q }: { q: MCQ | TypeQ | TilesQ }) {
   const listen = q.kind === "type" ? q.listen : undefined;
-  useEffect(() => { if (listen) { const t = window.setTimeout(() => speak(listen), 250); return () => window.clearTimeout(t); } }, [listen]);
+  useEffect(() => { if (listen) { const t = window.setTimeout(() => autoSpeak(listen), 250); return () => window.clearTimeout(t); } }, [listen]);
   return <>
     <div className="row" style={{ justifyContent: "space-between", flexWrap: "nowrap", gap: 12 }}>
       {q.kind === "mc" && q.clock ? <div style={{ flex: 1 }}><Clock h={q.clock.h} m={q.clock.m} /></div>
@@ -143,8 +143,8 @@ function FlipView({ q, onRate }: { q: FlipQ; onRate: (r: 1 | 2 | 3 | 4) => void 
   const [verdict, setVerdict] = useState<CheckRes | null>(null);
   const ref = useRef<HTMLInputElement>(null);
   const isNew = !sGet(c.id);
-  useEffect(() => { if (q.dir === "es") { const t = window.setTimeout(() => speak(c.es), 200); return () => window.clearTimeout(t); } if (typing) ref.current?.focus({ preventScroll: true }); }, [q, c.es, typing]);
-  const reveal = () => { if (shown) return; if (typing) setVerdict(checkAnswer(val, [c.es])); setShown(true); if (q.dir === "hr") speak(c.es); };
+  useEffect(() => { if (q.dir === "es") { const t = window.setTimeout(() => autoSpeak(c.es), 200); return () => window.clearTimeout(t); } if (typing) ref.current?.focus({ preventScroll: true }); }, [q, c.es, typing]);
+  const reveal = () => { if (shown) return; if (typing) setVerdict(checkAnswer(val, [c.es])); setShown(true); if (q.dir === "hr") autoSpeak(c.es); };
   useEffect(() => {
     const k = (e: KeyboardEvent) => {
       if (!shown && (e.key === "Enter" || (e.key === " " && !typing))) { e.preventDefault(); reveal(); }
