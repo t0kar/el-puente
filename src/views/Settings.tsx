@@ -5,7 +5,7 @@ import { firebaseConfigured, login, logout, onSync, syncInfo, syncNow, type Sync
 import { levelHasContent } from "../lib/level";
 import { deviceSubscribed, disableOnDevice, enableOnDevice, needsInstall, permission, pushConfigured, pushSupported, testNotification } from "../lib/push";
 import { customCards } from "../lib/cards";
-import { Seg, useNav } from "../components/ui";
+import { Ic, IconSpeak, Seg, useNav } from "../components/ui";
 
 const SYNC_TXT: Record<SyncStatus, string> = { off: "Solo en este dispositivo", guest: "No has iniciado sesión", busy: "Guardando…", sync: "Sincronizado", error: "Sin conexión · se guarda localmente" };
 export const useSync = () => useSyncExternalStore(onSync, syncInfo);
@@ -37,11 +37,11 @@ export function Account() {
     <div className="stack">
       <div className="row" style={{ justifyContent: "space-between" }}>
         <div className="row">{user.photoURL && <img className="avatar" src={user.photoURL} alt="" referrerPolicy="no-referrer" />}<span><b>{user.displayName || user.email}</b><br /><span className="hint">{user.email}</span></span></div>
-        <button className="btn ghost" onClick={() => logout()}>Cerrar sesión</button>
+        <button className="btn ghost" onClick={() => logout()}><Ic.logout /> Cerrar sesión</button>
       </div>
       <div className="syncbox"><span className="syncdot" data-state={syncState(status)}>{SYNC_TXT[status]}</span>{lastSync > 0 && <span className="hint">Última vez: {new Date(lastSync).toLocaleTimeString("es-ES", { hour: "2-digit", minute: "2-digit" })}</span>}</div>
       <p className="hint">Sprema se automatski 2 sekunde nakon odgovora i kad zatvoriš aplikaciju. Promjene s drugog uređaja stižu same.</p>
-      <button className="btn ghost" style={{ justifySelf: "start" }} onClick={() => syncNow()}>Sincronizar ahora</button>
+      <button className="btn ghost" style={{ justifySelf: "start" }} onClick={() => syncNow()}><Ic.sync /> Sincronizar ahora</button>
     </div>
   );
 }
@@ -83,7 +83,7 @@ function Reminder() {
         Obavijest može kasniti nekoliko minuta (šalje je automatski servis svakih 15 min).
       </Row>
       <div className="row">
-        <button className="btn ghost" disabled={busy} onClick={() => run(testNotification)}>Probar notificación</button>
+        <button className="btn ghost" disabled={busy} onClick={() => run(testNotification)}><Ic.bell /> Probar notificación</button>
       </div>
       {(msg || status) && <p className="hint" role="status">{msg || status}</p>}
     </div>
@@ -95,8 +95,8 @@ function Backup() {
   return (
     <div className="stack">
       <div className="row">
-        <button className="btn ghost" onClick={async () => { const c = exportCode(); setTxt(c); try { await navigator.clipboard.writeText(c); setMsg("Kod je kopiran. Spremi ga negdje sigurno."); } catch { setMsg("Kod je u polju. Označi ga i kopiraj."); } }}>Copiar código</button>
-        <button className="btn ghost" onClick={() => { try { importCode(txt); setMsg("Napredak je učitan i spojen s postojećim."); } catch { setMsg("Kod nije ispravan. Zalijepi cijeli kod."); } }}>Cargar código</button>
+        <button className="btn ghost" onClick={async () => { const c = exportCode(); setTxt(c); try { await navigator.clipboard.writeText(c); setMsg("Kod je kopiran. Spremi ga negdje sigurno."); } catch { setMsg("Kod je u polju. Označi ga i kopiraj."); } }}><Ic.copy /> Copiar código</button>
+        <button className="btn ghost" onClick={() => { try { importCode(txt); setMsg("Napredak je učitan i spojen s postojećim."); } catch { setMsg("Kod nije ispravan. Zalijepi cijeli kod."); } }}><Ic.load /> Cargar código</button>
       </div>
       <textarea id="backup-text" className="answer-input" rows={3} style={{ font: "500 .8rem var(--f-mono)", minHeight: 80 }} placeholder="Pega aquí tu código…" value={txt} onChange={e => setTxt(e.target.value)} aria-label="Código de copia" />
       {msg && <p className="hint" role="status">{msg}</p>}
@@ -144,7 +144,7 @@ export function Settings() {
         <Row title="Palabras nuevas por día" control={<Seg options={[[10, "10"], [20, "20"], [40, "40"]]} value={s.newPerDay} onChange={v => setSetting("newPerDay", v)} />}>
           Koliko novih kartica dobiješ dnevno. Više = brže kroz gradivo, ali više ponavljanja idućih dana. Gradivo sa zadnjeg sata uvijek dolazi prvo.
         </Row>
-        <Row title="Mis palabras" control={<button className="btn ghost" onClick={() => { go("tarjetas"); window.setTimeout(() => document.getElementById("mis-palabras")?.scrollIntoView({ behavior: "smooth", block: "start" }), 50); }}>{mine ? `Editar (${mine})` : "Añadir"}</button>}>
+        <Row title="Mis palabras" control={<button className="btn ghost" onClick={() => { go("tarjetas"); window.setTimeout(() => document.getElementById("mis-palabras")?.scrollIntoView({ behavior: "smooth", block: "start" }), 50); }}>{mine ? <><Ic.edit /> Editar ({mine})</> : <><Ic.plus /> Añadir</>}</button>}>
           Dodaj vlastite riječi (npr. s nastave ili iz pjesme). Postaju zasebna tema i ponavljaju se kao i ostale kartice.
         </Row>
       </Group>
@@ -164,7 +164,7 @@ export function Settings() {
         </Row>
         <Row title="Velocidad" control={<Seg options={[[false, "Normal"], [true, "Lenta"]]} value={s.slow} onChange={v => setSetting("slow", v)} />}>Lenta pomaže kod dugih rečenica, brojeva i diktata.</Row>
         <div className="stack">
-          <div className="row" style={{ justifyContent: "space-between" }}><b>Voz</b><button className="btn ghost" onClick={() => speak("¡Hola! Me llamo Paco y soy un pulpo.")}>Probar</button></div>
+          <div className="row" style={{ justifyContent: "space-between" }}><b>Voz</b><button className="btn ghost" onClick={() => speak("¡Hola! Me llamo Paco y soy un pulpo.")}><IconSpeak /> Probar</button></div>
           <VoicePicker />
           <p className="hint">Glas dolazi s tvog uređaja. Najbolji imaju oznaku Natural, Online, Enhanced ili Google. iPhone: Postavke → Pristupačnost → Izgovoreni sadržaj → Glasovi → Español (España) → Mónica (Enhanced). Android: Speech Services by Google → preuzmi španjolski. Računalo: Edge ima dobre Natural glasove.</p>
         </div>
@@ -172,8 +172,8 @@ export function Settings() {
       <Group title="Otros" mark="yellow">
         <Row title="Teclado" control={<span />}>Enter = dalje · 1–4 = odgovor ili ocjena · razmak = okreni karticu.</Row>
         <Row title="Borrar progreso" control={confirm
-          ? <div className="row"><button className="btn" onClick={() => { resetProgress(); setConfirm(false); }}>Sí, borrar</button><button className="btn ghost" onClick={() => setConfirm(false)}>Cancelar</button></div>
-          : <button className="btn ghost" onClick={() => setConfirm(true)}>Borrar progreso</button>}>
+          ? <div className="row"><button className="btn" onClick={() => { resetProgress(); setConfirm(false); }}><Ic.trash /> Sí, borrar</button><button className="btn ghost" onClick={() => setConfirm(false)}>Cancelar</button></div>
+          : <button className="btn ghost" onClick={() => setConfirm(true)}><Ic.trash /> Borrar progreso</button>}>
           Briše kartice, bodove i rekorde na svim uređajima. Postavke ostaju.
         </Row>
       </Group>

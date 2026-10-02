@@ -5,7 +5,7 @@ import { addXP, update, useAppState } from "../lib/store";
 import { speak, stopSpeech } from "../lib/speech";
 import { shuffle } from "../lib/util";
 import type { Story } from "../lib/types";
-import { Hint, IconSpeak, useNav } from "../components/ui";
+import { Hint, Ic, IconSpeak, IconTranslate, useNav } from "../components/ui";
 
 type Part = string | { opts: string[]; correct: string; why: string };
 function parse(text: string): Part[] {
@@ -67,20 +67,20 @@ export function StoryView({ id }: { id: string }) {
   return (
     <section className="view" id="story-view">
       <div className="row" style={{ justifyContent: "space-between" }}>
-        <button className="btn ghost" onClick={() => { stopSpeech(); go("historias"); }}>← Historias</button>
+        <button className="btn ghost" onClick={() => { stopSpeech(); go("historias"); }}><Ic.back /> Historias</button>
         <span className="hr">{s.g}</span>
       </div>
       <h1>{s.t}</h1>
       <div className="card stack">
         <div className="story">{parts.map((p, i) => (typeof p === "string" ? <span key={i}>{p}</span> : <Gap key={i} p={p} onSolve={onSolve} />))}</div>
         <div className="row">
-          <button className="btn ghost" onClick={() => setTr(t => !t)} aria-pressed={tr}>Traducción</button>
+          <button className="btn ghost" onClick={() => setTr(t => !t)} aria-pressed={tr}><IconTranslate /> Traducción</button>
           <button className="btn ghost" onClick={() => speak(plain)}><IconSpeak /> Escuchar</button>
         </div>
         {tr && <p className="hr">{s.hr}</p>}
         {solved === total && <>
           <div className="fb ok"><b>¡Fin! {first}/{total} a la primera.</b><span className="why">Escucha la historia y lee en voz alta con Paco. <Hint>Pusti priču i čitaj naglas zajedno s Pacom.</Hint></span></div>
-          <div className="row"><button className="btn primary" onClick={() => speak(plain)}>Escuchar la historia</button><button className="btn" onClick={() => go("historias")}>Más historias</button></div>
+          <div className="row"><button className="btn primary" onClick={() => speak(plain)}><IconSpeak /> Escuchar la historia</button><button className="btn" onClick={() => go("historias")}>Más historias</button></div>
         </>}
       </div>
     </section>

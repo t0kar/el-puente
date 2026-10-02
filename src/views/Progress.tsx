@@ -4,7 +4,7 @@ import { cards, customCards, MY_TOPIC } from "../lib/cards";
 import { activeTopics } from "../lib/level";
 import { cardsSession } from "../lib/questions";
 import { DAY, todayKey } from "../lib/util";
-import { Hint, useNav } from "../components/ui";
+import { Hint, Ic, useNav } from "../components/ui";
 
 function XPChart({ days, goal }: { days: Record<string, number>; goal: number }) {
   const N = 14, W = 340, H = 140, pad = { l: 26, r: 6, t: 10, b: 22 };
@@ -62,7 +62,7 @@ export function Progress() {
               <span className="bar"><i style={{ width: m.pct + "%" }} /></span>
               <span className="hint">{m.nw ? m.nw + " sin estudiar · " : ""}{m.due ? m.due + " para hoy" : "al día"}</span>
             </div>
-            <button className="btn ghost" onClick={() => start(cardsSession([T.k], T.t, "progreso"))}>Practicar</button>
+            <button className="btn ghost" onClick={() => start(cardsSession([T.k], T.t, "progreso"))}><Ic.play /> Practicar</button>
           </div>
         ))}
       </div>

@@ -3,6 +3,8 @@
 //   <p class="formula">…</p>                          one-line formula
 //   <div class="tbl"><table class="para">…</table></div>   paradigm table (forms in <i> = tap to hear)
 //   <ul class="rules"><li><code>rule</code><span>example</span></li></ul>   rule + example rows
+//   <span class="words"><i>a</i><i>b</i></span>          word chips (one <i> per word, each tappable)
+// widget:"boot" adds the interactive «bota» (components/Boot.tsx) after the html; its verbs come from verbs.ts
 //   <div class="duo">…two tables…</div>                 side by side on wide screens
 import type { Sheet } from "../lib/types";
 
@@ -14,16 +16,8 @@ export const SHEETS: Sheet[] = [
 <tr><th>él/ella/usted</th><td>-a</td><td>-e</td><td>-e</td></tr><tr><th>nosotros</th><td>-amos</td><td>-emos</td><td class="hl">-imos</td></tr>
 <tr><th>vosotros</th><td>-áis</td><td>-éis</td><td class="hl">-ís</td></tr><tr><th>ellos/ustedes</th><td>-an</td><td>-en</td><td>-en</td></tr></tbody></table></div>
 <p class="hint">-ER i -IR razlikuju se samo u nosotros i vosotros (označeno).</p>`},
-{t:"Cambio de vocal: la «bota»", mark:"pink", html:`
-<p class="formula">mijenja se samo osnova, i to samo u yo, tú, él, ellos</p>
-<div class="boot" aria-label="Bota"><span class="in">duermo</span><span class="out">dormimos</span><span class="in">duermes</span><span class="out">dormís</span><span class="in">duerme</span><span class="in">duermen</span></div>
-<p class="hint">Obojana polja čine «čizmu». Nosotros i vosotros su izvan čizme pa ostaju bez promjene.</p>
-<ul class="rules">
-<li><code>o → ue</code><span><i>dormir, volver, almorzar, poder, acostarse</i></span></li>
-<li><code>e → ie</code><span><i>empezar, querer, preferir, entender, despertarse, sentarse, sentirse, mentir</i></span></li>
-<li><code>e → i</code><span><i>pedir, repetir, vestirse, decir</i></span></li>
-<li><code>u → ue</code><span><i>jugar</i></span></li>
-</ul>`},
+{t:"Cambio de vocal: la «bota»", mark:"pink", widget:"boot", html:`
+<p class="formula">mijenja se samo osnova, i to samo u yo, tú, él, ellos</p>`},
 {t:"Verbos irregulares", mark:"pink", html:`
 <div class="tbl"><table class="para"><thead><tr><th></th><th>ser</th><th>estar</th><th>tener</th><th>ir</th></tr></thead><tbody>
 <tr><th>yo</th><td><i>soy</i></td><td><i>estoy</i></td><td><i>tengo</i></td><td><i>voy</i></td></tr><tr><th>tú</th><td><i>eres</i></td><td><i>estás</i></td><td><i>tienes</i></td><td><i>vas</i></td></tr>
@@ -43,8 +37,8 @@ export const SHEETS: Sheet[] = [
 <tr><th>3.</th><td><i>se lava</i></td><td><i>se peinan</i></td></tr></tbody></table></div>`},
 {t:"Ser · estar · hay", mark:"yellow", html:`
 <ul class="rules">
-<li><code>SER</code><span>trajno: tko, što, odakle, zanimanje, karakter<br><i>Soy de Zagreb. Es médico. Es aburrido.</i></span></li>
-<li><code>ESTAR</code><span>stanje i lokacija<br><i>Estoy cansado. El café está en el armario.</i></span></li>
+<li><code>SER</code><span>trajno: tko, što, odakle, zanimanje, karakter<br><i>Soy de Zagreb.</i> <i>Es médico.</i> <i>Es aburrido.</i></span></li>
+<li><code>ESTAR</code><span>stanje i lokacija<br><i>Estoy cansado.</i> <i>El café está en el armario.</i></span></li>
 <li><code>HAY</code><span>postojanje: hay + un/una/dos/muchos/imenica<br><i>Hay una toalla.</i></span></li>
 </ul>
 <p class="formula">HAY + el/la/los/las = ✗ uvijek greška</p>

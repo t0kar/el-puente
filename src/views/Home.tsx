@@ -3,7 +3,7 @@ import { activeTopics } from "../lib/level";
 import { useAppState, xpToday, streak } from "../lib/store";
 import { dueCards, mastery, newCards, newLeft, sGet } from "../lib/srs";
 import { beforeClassSession, cardsSession, dailySession, flipQ } from "../lib/questions";
-import { Hint, Ring, useNav } from "../components/ui";
+import { Hint, Ic, Ring, useNav } from "../components/ui";
 import { shuffle } from "../lib/util";
 
 const TIPS: [string, string][] = [
@@ -35,13 +35,13 @@ export function Home() {
           <div className="stats"><span className="pill">Racha <b>{streak(st)}</b> días</span><span className="pill">Palabras <b>{cards().length}</b></span></div>
         </div>
       </div>
-      <button className="btn primary big" onClick={() => start(dailySession())}>Repaso del día · 10 min</button>
+      <button className="btn primary big" onClick={() => start(dailySession())}><Ic.play /> Repaso del día · 10 min</button>
       <div className="card row" style={{ justifyContent: "space-between" }}>
         <div className="stack" style={{ gap: 4, minWidth: 0, flex: 1 }}>
           <h3><span className="mark yellow">Antes de clase · 5 min</span></h3>
           <p>{LAST_UPDATE ? `Lo nuevo desde la última clase (${last.length} palabras${lastNew ? ", " + lastNew + " sin estudiar" : ""}) y tus palabras difíciles.` : "Tus palabras difíciles y un poco de gramática."} <Hint>Kratko ponavljanje prije sljedećeg sata: zadnje gradivo + riječi u kojima najčešće griješiš.</Hint></p>
         </div>
-        <button className="btn" onClick={() => start(beforeClassSession())}>Empezar</button>
+        <button className="btn" onClick={() => start(beforeClassSession())}><Ic.play /> Empezar</button>
       </div>
       {LAST_UPDATE && last.length > 0 && (
         <div className="card row" style={{ justifyContent: "space-between" }}>
@@ -49,7 +49,7 @@ export function Home() {
             <h3><span className="mark green">Desde la última clase</span></h3>
             <p>{last.length} palabras nuevas{LAST_UPDATE.note ? " · " + LAST_UPDATE.note : ""}</p>
           </div>
-          <button className="btn" onClick={() => start({ title: "Desde la última clase", questions: shuffle(last).map(c => flipQ(c, !!sGet(c.id))), back: "hoy" })}>Practicar</button>
+          <button className="btn" onClick={() => start({ title: "Desde la última clase", questions: shuffle(last).map(c => flipQ(c, !!sGet(c.id))), back: "hoy" })}><Ic.play /> Practicar</button>
         </div>
       )}
       <div className="tip"><b>{tip[0]}</b> <Hint>{tip[1]}</Hint></div>

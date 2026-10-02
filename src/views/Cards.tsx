@@ -6,7 +6,7 @@ import { dueCards, hardCards, newCards, newLeft } from "../lib/srs";
 import { cardsSession, flipQ } from "../lib/questions";
 import { stripAcc } from "../lib/check";
 import { speak } from "../lib/speech";
-import { AccentBar, Hint, Seg, SpeakBtn, useNav } from "../components/ui";
+import { AccentBar, Hint, Ic, Seg, SpeakBtn, useNav } from "../components/ui";
 import type { Card } from "../lib/types";
 
 function WordList({ all }: { all: Card[] }) {
@@ -38,7 +38,7 @@ function WordForm({ initial, onDone, submit }: { initial?: Card; onDone?: () => 
       <input className="answer-input" value={hr} onChange={e => setHr(e.target.value)} onKeyDown={enter} placeholder="Hrvatski · riječ" aria-label="Hrvatski" autoComplete="off" />
       <AccentBar inputRef={esRef} />
       <div className="row">
-        <button className="btn primary" onClick={save}>{submit}</button>
+        <button className="btn primary" onClick={save}>{initial ? <Ic.check /> : <Ic.plus />} {submit}</button>
         {onDone && <button className="btn ghost" onClick={onDone}>Cancelar</button>}
       </div>
       {err && <p className="fb bad" role="alert">{err}</p>}
@@ -55,11 +55,11 @@ function MyWords() {
     <div className="card stack" id="mis-palabras">
       <div className="row" style={{ justifyContent: "space-between" }}>
         <h3><span className="mark green">Mis palabras</span></h3>
-        <button className="btn" disabled={!mine.length} onClick={() => start(cardsSession([MY_TOPIC.k], MY_TOPIC.t))}>Practicar</button>
+        <button className="btn" disabled={!mine.length} onClick={() => start(cardsSession([MY_TOPIC.k], MY_TOPIC.t))}><Ic.play /> Practicar</button>
       </div>
       <p>Añade palabras de clase, de series o de canciones. <Hint>Tvoje riječi postaju tema «Mis palabras» i ponavljaju se kao ostale kartice. Spremaju se u oblak s napretkom.</Hint></p>
       <WordForm submit="Añadir" />
-      {removed && <div className="undo" role="status"><span>Borrada: <b>{removed.es}</b></span><button className="btn ghost" onClick={() => { restoreCustomWord(removed.id); setRemoved(null); }}>Deshacer</button></div>}
+      {removed && <div className="undo" role="status"><span>Borrada: <b>{removed.es}</b></span><button className="btn ghost" onClick={() => { restoreCustomWord(removed.id); setRemoved(null); }}><Ic.again /> Deshacer</button></div>}
       {mine.length > 0 && <ul className="mywords">
         {mine.map(c => editing === c.id
           ? <li key={c.id} className="editing"><WordForm initial={c} submit="Guardar" onDone={() => setEditing(null)} /></li>
@@ -67,10 +67,10 @@ function MyWords() {
               <span className="w"><b>{c.es}</b><span className="hr">{c.hr}</span></span>
               <SpeakBtn text={c.es} />
               <button className="icon-btn" aria-label={"Editar " + c.es} title="Editar" onClick={() => setEditing(c.id)}>
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 20h4L19 9l-4-4L4 16z" /><path d="m13.5 6.5 4 4" /></svg>
+                <Ic.edit />
               </button>
               <button className="icon-btn" aria-label={"Borrar " + c.es} title="Borrar" onClick={() => { deleteCustomWord(c.id); setRemoved(c); }}>
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3" /></svg>
+                <Ic.trash />
               </button>
             </li>)}
       </ul>}
@@ -99,12 +99,12 @@ export function Cards() {
         <p className="hr">{dueCards(ls).length} para repasar · {Math.min(newCards(ls).length, ls ? 15 : newLeft())} nuevas en esta sesión</p>
         <div className="toggle"><span>Dirección</span><Seg options={[["es", "ES → HR"], ["hr", "HR → ES"], ["mix", "Mezcla"]]} value={st.settings.dir} onChange={v => setSetting("dir", v)} /></div>
         <div className="toggle"><span>Escribir la respuesta</span><Seg options={[[true, "Sí"], [false, "No"]]} value={st.settings.type} onChange={v => setSetting("type", v)} /></div>
-        <button className="btn primary big" onClick={() => start(cardsSession(ls))}>Empezar</button>
+        <button className="btn primary big" onClick={() => start(cardsSession(ls))}><Ic.play /> Empezar</button>
       </div>
       <MyWords />
       <div className="card row" style={{ justifyContent: "space-between" }}>
         <div><h3><span className="mark pink">Mis errores</span></h3><p>{hc.length ? hc.length + " palabras difíciles " : "Todavía no hay errores. "}<Hint>Riječi koje si najčešće griješio, bez obzira na raspored.</Hint></p></div>
-        <button className="btn" disabled={!hc.length} onClick={() => start({ title: "Mis errores", questions: hc.slice(0, 15).map(c => flipQ(c, true)), back: "tarjetas" })}>Repasar</button>
+        <button className="btn" disabled={!hc.length} onClick={() => start({ title: "Mis errores", questions: hc.slice(0, 15).map(c => flipQ(c, true)), back: "tarjetas" })}><Ic.again /> Repasar</button>
       </div>
       <details className="set"><summary>Ver todas las palabras ({all.length})</summary><WordList all={all} /></details>
     </section>

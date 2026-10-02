@@ -6,7 +6,8 @@ import { verbGroup, verbBase } from "../lib/verbs";
 import { verbSession } from "../lib/questions";
 import { esc } from "../lib/util";
 import type { Verb } from "../lib/types";
-import { ConjGrid, Hint, Seg, useNav, useToast, Toast } from "../components/ui";
+import { ConjGrid, Hint, Ic, Seg, SheetHtml, useNav, useToast, Toast } from "../components/ui";
+import { Boot } from "../components/Boot";
 
 const GROUPS: [string, string][] = [["reg", "Regulares"], ["o-ue", "o→ue"], ["e-ie", "e→ie"], ["e-i", "e→i"], ["u-ue", "u→ue"], ["irr", "Irregulares"], ["refl", "Reflexivos"], ["imp", "Imperativo"]];
 
@@ -33,7 +34,7 @@ export function Verbs() {
         <h3>Entrenamiento</h3>
         <div className="row">{GROUPS.map(([k, t]) => <button key={k} className="chip" aria-pressed={sel.includes(k)} onClick={() => setSel(s => s.includes(k) ? s.filter(x => x !== k) : [...s, k])}>{t}</button>)}</div>
         <div className="toggle"><span>Modo</span><Seg options={[["type", "Escribir"], ["mc", "Elegir"]]} value={settings.verbMode} onChange={m => setSetting("verbMode", m)} /></div>
-        <button className="btn primary big" onClick={() => { const p = pool(); if (!p.length) return toast.show("Elige al menos un grupo."); start(verbSession(p)); }}>12 preguntas</button>
+        <button className="btn primary big" onClick={() => { const p = pool(); if (!p.length) return toast.show("Elige al menos un grupo."); start(verbSession(p)); }}><Ic.play /> 12 preguntas</button>
       </div>
       <div className="card stack">
         <h3>Tabla de un verbo</h3>
@@ -44,7 +45,7 @@ export function Verbs() {
         <p><Hint>{expl + " Klik na oblik = izgovor."}</Hint></p>
         <ConjGrid verb={v} />
       </div>
-      {boot && <div className="card sheet"><h3>La bota</h3><div dangerouslySetInnerHTML={{ __html: boot.html }} /></div>}
+      {boot && <div className="card sheet"><h3>La bota</h3><SheetHtml html={boot.html} /><Boot /></div>}
       <Toast msg={toast.msg} />
     </section>
   );

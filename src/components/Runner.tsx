@@ -5,7 +5,7 @@ import { schedule, sGet, previewIntervals } from "../lib/srs";
 import { autoSpeak, speak } from "../lib/speech";
 import { checkAnswer, wordDiff, type CheckRes } from "../lib/check";
 import { pick, shuffle } from "../lib/util";
-import { AccentBar, Clock, ConjGrid, Hint, IconSpeak, SpeakBtn, useNav } from "./ui";
+import { AccentBar, Clock, ConjGrid, Hint, Ic, IconSpeak, SpeakBtn, useNav } from "./ui";
 
 type Fb = { kind: "ok" | "bad" | "warn"; title: string; why?: string; diff?: { w: string; ok: boolean }[] };
 
@@ -26,7 +26,7 @@ function NextBtn({ onNext }: { onNext: () => void }) {
     const t = window.setTimeout(() => document.addEventListener("keydown", k), 60);
     return () => { window.clearTimeout(t); document.removeEventListener("keydown", k); };
   }, [onNext]);
-  return <button ref={ref} className="btn primary big" onClick={onNext}>Siguiente</button>;
+  return <button ref={ref} className="btn primary big" onClick={onNext}>Siguiente <Ic.next /></button>;
 }
 const praise = () => pick(["¡Correcto!", "¡Muy bien!", "¡Eso es!", "¡Perfecto!", "¡Genial!"]);
 
@@ -45,12 +45,17 @@ function Prompt({ q }: { q: MCQ | TypeQ | TilesQ }) {
   const listen = q.kind === "type" ? q.listen : undefined;
   useEffect(() => { if (listen) { const t = window.setTimeout(() => autoSpeak(listen), 250); return () => window.clearTimeout(t); } }, [listen]);
   return <>
-    <div className="row" style={{ justifyContent: "space-between", flexWrap: "nowrap", gap: 12 }}>
+    {listen ? <>
+      {q.prompt && <div className="qmain">{q.prompt}</div>}
+      <div className="listen">
+        <button className="btn" onClick={() => speak(listen)}><IconSpeak /> Escuchar</button>
+        <button className="btn ghost" onClick={() => speak(listen, true)}><Ic.slow /> Lento</button>
+      </div>
+    </> : <div className="row" style={{ justifyContent: "space-between", flexWrap: "nowrap", gap: 12 }}>
       {q.kind === "mc" && q.clock ? <div style={{ flex: 1 }}><Clock h={q.clock.h} m={q.clock.m} /></div>
         : q.prompt ? <div className="qmain" style={{ flex: 1, minWidth: 0 }}>{q.prompt}</div> : null}
-      {listen ? <div className="row"><button className="btn" onClick={() => speak(listen)}><IconSpeak /> Escuchar</button><button className="btn ghost" onClick={() => speak(listen, true)}>Lento</button></div>
-        : q.kind === "mc" && q.speakPrompt ? <SpeakBtn text={q.speakPrompt} /> : null}
-    </div>
+      {q.kind === "mc" && q.speakPrompt ? <SpeakBtn text={q.speakPrompt} /> : null}
+    </div>}
     {"sub" in q && q.sub && <div><Hint>{q.sub}</Hint></div>}
   </>;
 }
@@ -220,8 +225,8 @@ export function Runner({ spec, onExit, onRestart }: { spec: SessionSpec; onExit:
           {s.mistakes.length > 0 && <><h3>Para repasar</h3>
             <div className="mistakes">{s.mistakes.slice(0, 12).map((q, i) => <div key={i}>{q.kind === "flip" ? `${q.card.es} = ${q.card.hr}` : `${q.prompt || "Reloj"} → ${q.kind === "mc" ? q.options[q.correct] : q.kind === "tiles" ? q.target.join(" ") : q.answers[0]}`}</div>)}</div></>}
           <div className="row" style={{ justifyContent: "center" }}>
-            {spec.again && <button className="btn primary" onClick={() => onRestart(spec.again!())}>Otra ronda</button>}
-            <button className="btn" onClick={onExit}>Volver</button>
+            {spec.again && <button className="btn primary" onClick={() => onRestart(spec.again!())}><Ic.again /> Otra ronda</button>}
+            <button className="btn" onClick={onExit}><Ic.back /> Volver</button>
           </div>
         </div>
       </div>
@@ -232,7 +237,7 @@ export function Runner({ spec, onExit, onRestart }: { spec: SessionSpec; onExit:
     <div className="runner">
       <div className="rhead">
         <button className="icon-btn" aria-label="Salir" title="Salir" onClick={() => setFinished(true)}>
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round"><path d="M6 6l12 12M18 6 6 18" /></svg>
+          <Ic.close />
         </button>
         <div className="bar"><i style={{ width: pct + "%" }} /></div>
         <span className="mastery">{Math.min(s.done, total)}/{total}</span>

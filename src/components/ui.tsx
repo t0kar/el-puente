@@ -1,4 +1,4 @@
-import { createContext, useContext, useRef, useState, type ReactNode } from "react";
+import { createContext, useContext, useEffect, useRef, useState, type ReactNode } from "react";
 import { speak } from "../lib/speech";
 import { conj, PERSONS, PERSONS_SHORT } from "../lib/verbs";
 import type { SessionSpec, Verb } from "../lib/types";
@@ -9,7 +9,7 @@ export const NavCtx = createContext<{ go: (v: ViewName) => void; start: (s: Sess
 export const useNav = () => useContext(NavCtx);
 
 // ---------- Croatian hint: shown inline, or (setting "Al tocar") behind a small translate icon ----------
-const IconTranslate = () => (
+export const IconTranslate = () => (
   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M4 5h8M8 3v2M10.5 5c-.8 3.6-3.2 6.5-6.5 8" /><path d="M6 9c1.2 2 3 3.5 5 4.4" /><path d="m13 21 4-9 4 9M14.4 18h5.2" /></svg>
 );
 export function Hint({ children, html, block }: { children?: ReactNode; html?: string; block?: boolean }) {
@@ -35,8 +35,43 @@ export function Seg<T extends string | number | boolean>({ options, value, onCha
 export const IconSpeak = () => (
   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M11 5 6 9H3v6h3l5 4z" /><path d="M15.5 8.5a5 5 0 0 1 0 7" /><path d="M18.5 5.5a9 9 0 0 1 0 13" /></svg>
 );
+// small stroke icons for buttons (24×24, currentColor)
+const ic = (d: ReactNode) => () => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">{d}</svg>;
+export const Ic = {
+  back: ic(<path d="M15 18l-6-6 6-6" />),
+  next: ic(<path d="M5 12h14M13 6l6 6-6 6" />),
+  play: ic(<path d="M7 4.5v15l12-7.5z" />),
+  again: ic(<><path d="M3 12a9 9 0 1 0 3-6.7L3 8" /><path d="M3 3v5h5" /></>),
+  plus: ic(<path d="M12 5v14M5 12h14" />),
+  check: ic(<path d="M5 12.5l4.5 4.5L19 7.5" />),
+  close: ic(<path d="M6 6l12 12M18 6 6 18" />),
+  slow: ic(<><path d="M12 14l3.5-3.5" /><path d="M3.3 19a10 10 0 1 1 17.4 0" /></>),
+  copy: ic(<><rect x="9" y="9" width="12" height="12" rx="2" /><path d="M5 15H4a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v1" /></>),
+  load: ic(<><path d="M12 15V3M7 10l5 5 5-5" /><path d="M4 15v4a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-4" /></>),
+  logout: ic(<><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" /><path d="M16 17l5-5-5-5M21 12H9" /></>),
+  sync: ic(<><path d="M21 12a9 9 0 0 1-15 6.7L3 16" /><path d="M3 12a9 9 0 0 1 15-6.7L21 8" /><path d="M21 3v5h-5M3 21v-5h5" /></>),
+  bell: ic(<><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9" /><path d="M10.3 21a2 2 0 0 0 3.4 0" /></>),
+  trash: ic(<path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3" />),
+  edit: ic(<><path d="M4 20h4L19 9l-4-4L4 16z" /><path d="m13.5 6.5 4 4" /></>),
+};
+
 export function SpeakBtn({ text, label = "Escuchar" }: { text: string; label?: string }) {
   return <button type="button" className="icon-btn" aria-label={label} title={label} onClick={e => { e.stopPropagation(); speak(text); }}><IconSpeak /></button>;
+}
+
+/** grammar HTML from content/sheets.ts; every <i> example is a button that speaks itself */
+export function SheetHtml({ html }: { html: string }) {
+  const ref = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    ref.current?.querySelectorAll("i").forEach(i => { i.tabIndex = 0; i.setAttribute("role", "button"); i.title = "Escuchar"; });
+  }, [html]);
+  const say = (el: EventTarget) => {
+    const i = (el as HTMLElement).closest?.("i");
+    if (!i || !ref.current?.contains(i)) return;
+    speak(i.textContent || "");
+    i.classList.remove("said"); void i.offsetWidth; i.classList.add("said");
+  };
+  return <div ref={ref} className="stack sheet-body" onClick={e => say(e.target)} onKeyDown={e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); say(e.target); } }} dangerouslySetInnerHTML={{ __html: html }} />;
 }
 
 export function AccentBar({ inputRef }: { inputRef: React.RefObject<HTMLInputElement> }) {

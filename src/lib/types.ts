@@ -12,7 +12,7 @@ export interface Verb { inf: string; hr: string; type?: StemType; refl?: boolean
 export type Rule = [string, string[], number, string, (number | string)?, Level?];
 
 export interface Story { id: string; g: string; t: string; hr: string; text: string; u?: string; lvl?: Level }
-export interface Sheet { t: string; mark: Mark; html: string; u?: string; lvl?: Level }
+export interface Sheet { t: string; mark: Mark; html: string; u?: string; lvl?: Level; widget?: "boot" }
 
 export interface CardState { i: number; e: number; r: number; l: number; d: number; t: number }
 

@@ -5,7 +5,7 @@ import { gameSessions, vocabMC } from "../lib/questions";
 import { autoSpeak } from "../lib/speech";
 import { pick, shuffle } from "../lib/util";
 import type { Card, Mark } from "../lib/types";
-import { Hint, useNav } from "../components/ui";
+import { Hint, Ic, useNav } from "../components/ui";
 
 export function Games() {
   const st = useAppState();
@@ -33,6 +33,8 @@ export function Games() {
     </section>
   );
 }
+
+const ExitBtn = ({ onClick }: { onClick: () => void }) => <button className="icon-btn" aria-label="Salir" title="Salir" onClick={onClick}><Ic.close /></button>;
 
 function pairSet(): Card[] {
   const out: Card[] = [], seen = new Set<string>();
@@ -63,13 +65,13 @@ export function Pairs() {
     <section className="view"><div className="qcard done pop">
       <div className="hand">{result.rec ? "¡Nuevo récord!" : "¡Hecho!"}</div><div className="score">{result.secs} s</div>
       <p className="hr">{errors} errores (+2 s cada uno)</p>
-      <div className="row" style={{ justifyContent: "center" }}><button className="btn primary" onClick={again}>Otra vez</button><button className="btn" onClick={() => go("juegos")}>Volver</button></div>
+      <div className="row" style={{ justifyContent: "center" }}><button className="btn primary" onClick={again}><Ic.again /> Otra vez</button><button className="btn" onClick={() => go("juegos")}><Ic.back /> Volver</button></div>
     </div></section>
   );
   const cls = (id: string, side: "L" | "R") => (gone.includes(id) ? "gone" : bad && bad[side === "L" ? 0 : 1] === id ? "bad" : (side === "L" ? selL : selR) === id ? "sel" : "");
   return (
     <section className="view">
-      <div className="row" style={{ justifyContent: "space-between" }}><h2>Parejas</h2><span className="timer">{Math.round((now - t0) / 1000)} s</span><button className="btn ghost" onClick={() => go("juegos")}>Salir</button></div>
+      <div className="gamehead"><ExitBtn onClick={() => go("juegos")} /><h2>Parejas</h2><span className="timer">{Math.round((now - t0) / 1000)} s</span></div>
       <p>Izquierda: español. Derecha: croata.</p>
       <div className="pairs">
         {left.map((c, i) => [
@@ -108,12 +110,12 @@ export function Rush() {
     <section className="view"><div className="qcard done pop">
       <div className="hand">{over.rec ? "¡Nuevo récord!" : "¡Tiempo!"}</div><div className="score">{score}</div>
       {missed.length > 0 && <div className="mistakes">{missed.slice(0, 8).map((c, i) => <div key={i}>{c.es} = {c.hr}</div>)}</div>}
-      <div className="row" style={{ justifyContent: "center" }}><button className="btn primary" onClick={again}>Otra vez</button><button className="btn" onClick={() => go("juegos")}>Volver</button></div>
+      <div className="row" style={{ justifyContent: "center" }}><button className="btn primary" onClick={again}><Ic.again /> Otra vez</button><button className="btn" onClick={() => go("juegos")}><Ic.back /> Volver</button></div>
     </div></section>
   );
   return (
     <section className="view">
-      <div className="row" style={{ justifyContent: "space-between" }}><h2>Contrarreloj</h2><span className="pill">Puntos <b>{score}</b></span><span className="timer">{left}</span></div>
+      <div className="gamehead"><ExitBtn onClick={() => go("juegos")} /><h2>Contrarreloj</h2><span className="pill">Puntos <b>{score}</b></span><span className="timer">{left}</span></div>
       <p>Error = −3 segundos. <Hint>Svaka greška oduzima 3 sekunde.</Hint></p>
       <div className="qcard pop" key={q.prompt + score + missed.length}>
         <div className="qmain">{q.prompt}</div>
