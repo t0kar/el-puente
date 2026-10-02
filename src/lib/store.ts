@@ -3,7 +3,7 @@ import type { AppState, Settings } from "./types";
 import { todayKey, DAY } from "./util";
 
 const LS_KEY = "el-puente-v1";
-export const defaultSettings = (): Settings => ({ dir: "mix", type: false, newPerDay: 20, slow: false, verbMode: "type", goal: 60, tips: true, voice: "", theme: "auto", autoplay: false, levels: "mix" });
+export const defaultSettings = (): Settings => ({ dir: "mix", type: false, newPerDay: 20, slow: false, verbMode: "type", goal: 60, tips: true, voice: "", theme: "auto", autoplay: false, levels: "mix", remind: { on: false, time: "19:00" } });
 export const defaultState = (): AppState => ({ cards: {}, days: {}, best: {}, stories: {}, custom: {}, newDay: { d: "", n: 0 }, settings: defaultSettings(), updatedAt: 0, resetAt: 0 });
 
 function normalize(s: Partial<AppState> | null | undefined): AppState {

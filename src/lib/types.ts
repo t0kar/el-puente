@@ -28,6 +28,8 @@ export interface Settings {
   theme: "auto" | "light" | "dark";
   autoplay: boolean;
   levels: "a11" | "a12" | "mix";
+  /** daily push reminder; time is local "HH:MM" */
+  remind: { on: boolean; time: string };
 }
 
 /** a word the user added; `del` is a tombstone so deletions survive sync */

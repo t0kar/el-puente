@@ -3,6 +3,7 @@ import { exportCode, importCode, resetProgress, setSetting, useSettings } from "
 import { esVoices, onVoices, pickVoice, speak, currentVoice } from "../lib/speech";
 import { firebaseConfigured, login, logout, onSync, syncInfo, syncNow, type SyncStatus } from "../lib/firebase";
 import { levelHasContent } from "../lib/level";
+import { deviceSubscribed, disableOnDevice, enableOnDevice, needsInstall, permission, pushConfigured, pushSupported, testNotification } from "../lib/push";
 import { customCards } from "../lib/cards";
 import { Seg, useNav } from "../components/ui";
 
@@ -57,6 +58,38 @@ function VoicePicker() {
   );
 }
 
+function Reminder() {
+  const { remind } = useSettings();
+  const { user } = useSync();
+  const [here, setHere] = useState<boolean | null>(null);
+  const [busy, setBusy] = useState(false), [msg, setMsg] = useState("");
+  useEffect(() => { deviceSubscribed().then(setHere); }, [user]);
+  const run = async (f: () => Promise<string | void>) => { setBusy(true); setMsg(""); const e = await f(); setBusy(false); if (e) setMsg(e); setHere(await deviceSubscribed()); };
+  const turnOn = () => run(async () => { const e = await enableOnDevice(); if (!e) setSetting("remind", { ...remind, on: true }); return e; });
+  const turnOff = () => run(async () => { await disableOnDevice(); setSetting("remind", { ...remind, on: false }); });
+
+  if (!pushConfigured) return <p className="hint">Podsjetnici još nisu podešeni (nedostaje VAPID ključ ili Firebase). Upute su u README-u.</p>;
+  if (!pushSupported()) return <p className="hint">Ovaj preglednik ne podržava obavijesti.</p>;
+  if (needsInstall()) return <p className="hint">Na iPhoneu i iPadu obavijesti rade samo kad je aplikacija na početnom zaslonu: u Safariju dodirni <b>Dijeli</b> → <b>Dodaj na početni zaslon</b>, otvori aplikaciju odande i vrati se ovdje.</p>;
+  if (!user) return <p className="hint">Prijavi se Google računom (gore, Cuenta y progreso) da bi uključio dnevni podsjetnik.</p>;
+  const status = permission() === "denied" ? "Obavijesti su blokirane u pregledniku. Dopusti ih u postavkama stranice pa pokušaj ponovno."
+    : remind.on && here ? "Uključeno na ovom uređaju." : remind.on && here === false ? "Uključeno na drugom uređaju. Odaberi Sí da stiže i ovdje." : "";
+  return (
+    <div className="stack">
+      <Row title="Recordatorio diario" control={<Seg options={[[false, "No"], [true, "Sí"]]} value={remind.on && here !== false} onChange={v => (v ? turnOn() : turnOff())} />}>
+        Ako taj dan još nisi vježbao, u odabrano vrijeme stiže obavijest. Ako jesi, ne stiže ništa.
+      </Row>
+      <Row title="Hora" control={<input type="time" className="answer-input timepick" value={remind.time} step={900} onChange={e => e.target.value && setSetting("remind", { ...remind, time: e.target.value })} aria-label="Hora del recordatorio" />}>
+        Obavijest može kasniti nekoliko minuta (šalje je automatski servis svakih 15 min).
+      </Row>
+      <div className="row">
+        <button className="btn ghost" disabled={busy} onClick={() => run(testNotification)}>Probar notificación</button>
+      </div>
+      {(msg || status) && <p className="hint" role="status">{msg || status}</p>}
+    </div>
+  );
+}
+
 function Backup() {
   const [txt, setTxt] = useState(""), [msg, setMsg] = useState("");
   return (
@@ -97,6 +130,9 @@ export function Settings() {
         <Row title="Contenido" control={<Seg label="Nivel" options={[["a11", "A1.1"], ["a12", "A1.2", !hasA12], ["mix", "Ambos"]]} value={s.levels} onChange={v => setSetting("levels", v)} />}>
           Koje gradivo vježbaš: samo A1.1, samo A1.2 ili oboje izmiješano. Vrijedi za kartice, glagole, pravila, priče i chuletu. Tvoje riječi (Mis palabras) uvijek su uključene.{!hasA12 && " A1.2 gradivo još nije dodano."}
         </Row>
+      </Group>
+      <Group title="Recordatorio" mark="pink">
+        <Reminder />
       </Group>
       <Group title="Tarjetas" mark="green">
         <Row title="Dirección" control={<Seg options={[["es", "ES → HR"], ["hr", "HR → ES"], ["mix", "Mezcla"]]} value={s.dir} onChange={v => setSetting("dir", v)} />}>

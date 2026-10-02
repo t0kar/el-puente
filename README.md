@@ -41,9 +41,30 @@ Ove vrijednosti nisu tajne (Firebase web config je javan po dizajnu). Podatke š
 
 Aplikacija je na `https://<username>.github.io/el-puente/`. Taj link pošalji kolegama.
 
+### 3. Dnevni podsjetnici (neobavezno)
+
+Podsjetnik je prava push obavijest: korisnik u **Ajustes → Recordatorio** odabere vrijeme, a GitHub Actions (`.github/workflows/remind.yml`) svakih 15 minuta pošalje obavijest onima koji taj dan još nisu vježbali. Bez ovog koraka aplikacija radi normalno, samo je odjeljak Recordatorio isključen.
+
+1. Generiraj VAPID ključeve (jednom):
+   ```bash
+   npx web-push generate-vapid-keys
+   ```
+2. GitHub → **Settings → Secrets and variables → Actions**:
+   - **Variables:** `VITE_VAPID_PUBLIC_KEY` = Public Key, `VAPID_SUBJECT` = `mailto:tvoj@email.com`
+   - **Secrets:** `VAPID_PRIVATE_KEY` = Private Key
+3. Firebase → **Project settings → Service accounts → Generate new private key** → cijeli sadržaj JSON datoteke spremi kao secret `FIREBASE_SERVICE_ACCOUNT`. (Ta datoteka je tajna — ne commitaj je.)
+4. Firestore → **Rules** → zalijepi novu verziju [`firestore.rules`](firestore.rules) → **Publish** (dodano pravilo za `users/{uid}/push`).
+5. Ponovno pokreni **Deploy to GitHub Pages** (da build dobije javni ključ). Provjera: **Actions → Daily reminders → Run workflow** s uključenim *Dry run* — u logu piše koliko bi obavijesti bilo poslano.
+
+Napomene:
+- **iPhone/iPad:** obavijesti rade samo kad je aplikacija dodana na početni zaslon (Safari → Dijeli → Dodaj na početni zaslon), iOS 16.4+.
+- GitHub zna zakasniti s pokretanjem nekoliko minuta, zato se obavijest šalje u prozoru od 2 sata nakon odabranog vremena, najviše jednom dnevno.
+- GitHub pauzira zakazane workflowe nakon 60 dana bez aktivnosti u repozitoriju — tada ih ponovno uključi u **Actions**.
+- Lokalni test logike: `npm run remind:test`.
+
 ## Besplatni limiti
 
-Firestore Spark: 1 GB, 50 000 čitanja i 20 000 pisanja dnevno. Jedan korisnik ima jedan dokument (~30–60 KB) i piše ga najviše jednom u 2 sekunde dok vježba. To je dovoljno za desetke aktivnih korisnika.
+Firestore Spark: 1 GB, 50 000 čitanja i 20 000 pisanja dnevno. Jedan korisnik ima jedan dokument (~30–60 KB) i piše ga najviše jednom u 2 sekunde dok vježba. To je dovoljno za desetke aktivnih korisnika. Podsjetnici dodaju otprilike 2 čitanja po pretplaćenom uređaju svakih 15 minuta (≈ 200 dnevno po uređaju).
 
 ## Dodavanje gradiva
 

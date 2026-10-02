@@ -5,5 +5,10 @@ service cloud.firestore {
     match /users/{uid} {
       allow read, write: if request.auth != null && request.auth.uid == uid;
     }
+    // Push subscriptions for daily reminders, one doc per device. Only the owner writes them;
+    // the reminder job (.github/workflows/remind.yml) reads them with a service account.
+    match /users/{uid}/push/{device} {
+      allow read, write: if request.auth != null && request.auth.uid == uid;
+    }
   }
 }

@@ -39,6 +39,22 @@ function useTheme(theme: SettingsT["theme"]) {
   }, [theme]);
 }
 
+/** body.scrolled once the page moved; body.hdr-hidden while scrolling down (CSS hides the header on phones) */
+function useHeaderScroll() {
+  useEffect(() => {
+    let last = window.scrollY;
+    const onScroll = () => {
+      const y = window.scrollY, b = document.body.classList;
+      b.toggle("scrolled", y > 4);
+      if (y < 64) { b.remove("hdr-hidden"); last = y; }
+      else if (y > last + 8) { b.add("hdr-hidden"); last = y; }
+      else if (y < last - 8) { b.remove("hdr-hidden"); last = y; }
+    };
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
+}
+
 function LoginBanner() {
   const { user, authReady } = useSync();
   const [hide, setHide] = useState(() => { try { return localStorage.getItem("el-puente-nobanner") === "1"; } catch { return false; } });
@@ -61,6 +77,8 @@ export function App() {
   const [sessionKey, setSessionKey] = useState(0);
   useEffect(() => { document.body.classList.toggle("tips-off", !st.settings.tips); }, [st.settings.tips]);
   useTheme(st.settings.theme);
+  useHeaderScroll();
+  useEffect(() => { document.body.classList.toggle("in-session", !!session); }, [session]);
   const go = (v: ViewName) => { setSession(null); setView(v); window.scrollTo({ top: 0 }); try { if (TABS.some(t => t[0] === v)) localStorage.setItem(VIEW_KEY, v); } catch { /* ignore */ } };
   const start = (s: SessionSpec) => { setSession(s); setSessionKey(k => k + 1); window.scrollTo({ top: 0 }); };
   const exitSession = () => { const back = (session?.back as ViewName) || view; setSession(null); setView(back); };

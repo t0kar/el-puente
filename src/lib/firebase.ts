@@ -80,3 +80,6 @@ export async function login() {
 }
 export const logout = async () => { if (auth) { window.clearTimeout(timer); await push(); await signOut(auth); } };
 export const syncNow = () => push();
+/** handles for other Firestore features (push subscriptions) */
+export const firestore = () => db;
+export const currentUser = () => user;
