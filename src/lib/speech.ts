@@ -28,6 +28,7 @@ export const currentVoice = () => voice;
 const clean = (t: string) => t.replace(/\([^)]*\)/g, "").replace(/≠/g, ",").replace(/ = /g, ", ").replace(/ \/ /g, ", ").replace(/\.\.\./g, "").replace(/___/g, "...");
 export function speak(text: string, slow?: boolean) {
   if (!("speechSynthesis" in window)) return false;
+  if (playerActive) { gen++; playerInterrupted?.(); } // a quick phrase interrupts the player
   try {
     speechSynthesis.cancel();
     const u = new SpeechSynthesisUtterance(clean(text));
@@ -38,6 +39,31 @@ export function speak(text: string, slow?: boolean) {
     return true;
   } catch { return false; }
 }
+/** one utterance with callbacks, for the read-along player. Text is spoken as-is so char offsets stay exact.
+ *  Callbacks of an utterance replaced by a later utter()/speak()/stop are ignored. */
+let gen = 0, playerActive = false, playerInterrupted: (() => void) | null = null;
+/** the player registers while it's speaking so a tap on another word can pause it */
+export function setPlayer(active: boolean, onInterrupt?: () => void) { playerActive = active; playerInterrupted = active ? onInterrupt || null : null; }
+export interface UtterOpts { rate: number; onStart?: () => void; onWord?: (charIndex: number, charLength?: number) => void; onEnd?: () => void }
+export function utter(text: string, o: UtterOpts) {
+  if (!("speechSynthesis" in window)) { o.onEnd?.(); return; }
+  const my = ++gen;
+  try {
+    speechSynthesis.cancel();
+    const u = new SpeechSynthesisUtterance(text);
+    u.lang = "es-ES";
+    if (voice) u.voice = voice;
+    u.rate = o.rate;
+    u.onstart = () => { if (my === gen) o.onStart?.(); };
+    u.onboundary = e => { if (my === gen && e.name !== "sentence") o.onWord?.(e.charIndex, (e as SpeechSynthesisEvent & { charLength?: number }).charLength); };
+    u.onend = () => { if (my === gen) o.onEnd?.(); };
+    u.onerror = e => { if (my === gen && e.error !== "interrupted" && e.error !== "canceled") o.onEnd?.(); };
+    speechSynthesis.speak(u);
+  } catch { o.onEnd?.(); }
+}
+/** stop the player's utterance and drop its pending callbacks */
+export const stopUtter = () => { gen++; try { speechSynthesis.cancel(); } catch { /* ignore */ } };
+
 /** speech the user didn't ask for (new question, revealed answer): only when autoplay is on */
 export const autoSpeak = (text: string, slow?: boolean) => (getState().settings.autoplay ? speak(text, slow) : false);
 export const stopSpeech = () => { try { speechSynthesis.cancel(); } catch { /* ignore */ } };

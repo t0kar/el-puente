@@ -53,6 +53,10 @@ export const Ic = {
   bell: ic(<><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9" /><path d="M10.3 21a2 2 0 0 0 3.4 0" /></>),
   trash: ic(<path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3" />),
   edit: ic(<><path d="M4 20h4L19 9l-4-4L4 16z" /><path d="m13.5 6.5 4 4" /></>),
+  pause: ic(<path d="M8 5v14M16 5v14" />),
+  stop: ic(<rect x="6" y="6" width="12" height="12" rx="2" />),
+  prevS: ic(<><path d="M6 5v14" /><path d="M18 6l-8 6 8 6z" /></>),
+  nextS: ic(<><path d="M18 5v14" /><path d="M6 6l8 6-8 6z" /></>),
 };
 
 export function SpeakBtn({ text, label = "Escuchar" }: { text: string; label?: string }) {
