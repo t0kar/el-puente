@@ -1,0 +1,31 @@
+/* Juegos */
+.pairs {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+.pairs button {
+  border: 2px solid var(--line);
+  background: var(--card);
+  border-radius: 12px;
+  padding: 10px;
+  min-height: 56px;
+  font-size: 0.95rem;
+  overflow-wrap: anywhere;
+}
+.pairs button.sel {
+  border-color: var(--ink);
+  background: var(--paper-2);
+}
+.pairs button.gone {
+  visibility: hidden;
+}
+.pairs button.bad {
+  border-color: var(--bad);
+  background: var(--bad-bg);
+}
+.timer {
+  font: 800 1.4rem var(--f-mono);
+  color: var(--ink);
+  font-variant-numeric: tabular-nums;
+}

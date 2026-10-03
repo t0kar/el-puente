@@ -6,7 +6,7 @@
 //   <span class="words"><i>a</i><i>b</i></span>          word chips (one <i> per word, each tappable)
 // widget:"boot" adds the interactive «bota» (components/Boot.tsx) after the html; its verbs come from verbs.ts
 //   <div class="duo">…two tables…</div>                 side by side on wide screens
-import type { Sheet } from "../lib/types";
+import type { Sheet } from "../../lib/types";
 
 export const SHEETS: Sheet[] = [
 {t:"Verbos regulares", mark:"pink", html:`

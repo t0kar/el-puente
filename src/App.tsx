@@ -1,112 +1,60 @@
-import { useEffect, useState } from "react";
-import { NavCtx, ICONS, IconFlame, Logo, type ViewName } from "./components/ui";
-import { Runner } from "./components/Runner";
-import { streak, useAppState, xpToday } from "./lib/store";
-import type { Settings as SettingsT } from "./lib/types";
-import { firebaseConfigured, login } from "./lib/firebase";
-import type { SessionSpec } from "./lib/types";
-import { Home } from "./views/Home";
-import { Cards } from "./views/Cards";
-import { Verbs } from "./views/Verbs";
-import { Games, Pairs, Rush } from "./views/Games";
-import { Stories, StoryView } from "./views/Stories";
-import { Sheets } from "./views/Sheets";
-import { Settings, useSync } from "./views/Settings";
-import { Progress } from "./views/Progress";
+import { useEffect, type ReactElement } from "react";
+import { AppHeader } from "./app/AppHeader";
+import { NavCtx, type ViewName } from "./app/navigation";
+import { TabBar } from "./app/TabBar";
+import { useHeaderScroll } from "./app/useHeaderScroll";
+import { useRoute } from "./app/useRoute";
+import { useTheme } from "./app/useTheme";
+import { Cards } from "./features/cards/Cards";
+import { Games } from "./features/games/Games";
+import { Pairs } from "./features/games/Pairs";
+import { Rush } from "./features/games/Rush";
+import { Home } from "./features/home/Home";
+import { Runner } from "./features/practice/Runner";
+import { Progress } from "./features/progress/Progress";
+import { Settings } from "./features/settings/Settings";
+import { Sheets } from "./features/sheets/Sheets";
+import { Stories } from "./features/stories/Stories";
+import { StoryView } from "./features/stories/StoryView";
+import { Verbs } from "./features/verbs/Verbs";
+import { useSettings } from "./lib/store";
+import { initSeenUpdates } from "./lib/updates";
 
-const TABS: [ViewName, string][] = [["hoy", "Hoy"], ["tarjetas", "Tarjetas"], ["verbos", "Verbos"], ["juegos", "Juegos"], ["historias", "Historias"], ["chuleta", "Chuleta"]];
-const VIEW_KEY = "el-puente-view";
-const initialView = (): ViewName => {
-  const h = location.hash.slice(1);
-  if (TABS.some(t => t[0] === h) || h === "ajustes" || h === "progreso") return h as ViewName;
-  try { const v = localStorage.getItem(VIEW_KEY); if (v && TABS.some(t => t[0] === v)) return v as ViewName; } catch { /* ignore */ }
-  return "hoy";
+/** screen for each view; `story:<id>` is handled separately */
+const SCREENS: Record<string, () => ReactElement> = {
+  hoy: () => <Home />,
+  tarjetas: () => <Cards />,
+  verbos: () => <Verbs />,
+  juegos: () => <Games />,
+  historias: () => <Stories />,
+  chuleta: () => <Sheets />,
+  ajustes: () => <Settings />,
+  progreso: () => <Progress />,
+  pairs: () => <Pairs />,
+  rush: () => <Rush />,
 };
+const screenFor = (view: ViewName) => (view.startsWith("story:") ? <StoryView id={view.slice(6)} /> : (SCREENS[view] ?? SCREENS.hoy)());
 
-const DARK_MQ = typeof window !== "undefined" ? window.matchMedia("(prefers-color-scheme: dark)") : null;
-function applyTheme(theme: SettingsT["theme"]) {
-  const root = document.documentElement;
-  if (theme === "auto") delete root.dataset.theme; else root.dataset.theme = theme;
-  const dark = theme === "dark" || (theme === "auto" && !!DARK_MQ?.matches);
-  document.querySelector('meta[name="theme-color"]')?.setAttribute("content", dark ? "#14171f" : "#fbfaf5");
-}
-function useTheme(theme: SettingsT["theme"]) {
-  useEffect(() => {
-    applyTheme(theme);
-    if (theme !== "auto" || !DARK_MQ) return;
-    const f = () => applyTheme("auto");
-    DARK_MQ.addEventListener("change", f); return () => DARK_MQ.removeEventListener("change", f);
-  }, [theme]);
-}
-
-/** body.scrolled once the page moved; body.hdr-hidden while scrolling down (CSS hides the header on phones) */
-function useHeaderScroll() {
-  useEffect(() => {
-    let last = window.scrollY;
-    const onScroll = () => {
-      const y = window.scrollY, b = document.body.classList;
-      b.toggle("scrolled", y > 4);
-      if (y < 64) { b.remove("hdr-hidden"); last = y; }
-      else if (y > last + 8) { b.add("hdr-hidden"); last = y; }
-      else if (y < last - 8) { b.remove("hdr-hidden"); last = y; }
-    };
-    window.addEventListener("scroll", onScroll, { passive: true });
-    return () => window.removeEventListener("scroll", onScroll);
-  }, []);
-}
-
-function LoginBanner() {
-  const { user, authReady } = useSync();
-  const [hide, setHide] = useState(() => { try { return localStorage.getItem("el-puente-nobanner") === "1"; } catch { return false; } });
-  if (!firebaseConfigured || !authReady || user || hide) return null;
-  return (
-    <div className="banner">
-      <span>Inicia sesión para guardar tu progreso en móvil y ordenador.</span>
-      <span className="row">
-        <button className="btn" onClick={() => login().catch(() => {})}>Entrar con Google</button>
-        <button className="btn ghost" onClick={() => { setHide(true); try { localStorage.setItem("el-puente-nobanner", "1"); } catch { /* ignore */ } }}>Ahora no</button>
-      </span>
-    </div>
-  );
-}
-
-export function App() {
-  const st = useAppState();
-  const [view, setView] = useState<ViewName>(initialView);
-  const [session, setSession] = useState<SessionSpec | null>(null);
-  const [sessionKey, setSessionKey] = useState(0);
-  useEffect(() => { document.body.classList.toggle("tips-off", !st.settings.tips); }, [st.settings.tips]);
-  useTheme(st.settings.theme);
+export const App = () => {
+  const settings = useSettings();
+  const { view, session, sessionKey, go, start, exitSession } = useRoute();
+  useTheme(settings.theme);
   useHeaderScroll();
-  useEffect(() => { document.body.classList.toggle("in-session", !!session); }, [session]);
-  const go = (v: ViewName) => { setSession(null); setView(v); window.scrollTo({ top: 0 }); try { if (TABS.some(t => t[0] === v)) localStorage.setItem(VIEW_KEY, v); } catch { /* ignore */ } };
-  const start = (s: SessionSpec) => { setSession(s); setSessionKey(k => k + 1); window.scrollTo({ top: 0 }); };
-  const exitSession = () => { const back = (session?.back as ViewName) || view; setSession(null); setView(back); };
-
-  let body;
-  if (session) body = <Runner key={sessionKey} spec={session} onExit={exitSession} onRestart={start} />;
-  else if (view.startsWith("story:")) body = <StoryView id={view.slice(6)} />;
-  else body = ({ hoy: <Home />, tarjetas: <Cards />, verbos: <Verbs />, juegos: <Games />, historias: <Stories />, chuleta: <Sheets />, ajustes: <Settings />, progreso: <Progress />, pairs: <Pairs />, rush: <Rush /> } as Record<string, JSX.Element>)[view] ?? <Home />;
-  const activeTab = view.startsWith("story:") ? "historias" : view === "pairs" || view === "rush" ? "juegos" : view;
+  useEffect(initSeenUpdates, []);
+  useEffect(() => {
+    document.body.classList.toggle("tips-off", !settings.tips);
+  }, [settings.tips]);
+  useEffect(() => {
+    document.body.classList.toggle("in-session", !!session);
+  }, [session]);
 
   return (
     <NavCtx.Provider value={{ go, start }}>
       <div className="wrap">
-        <header className="top">
-          <button className="logo" aria-label="Cruza el Puente · inicio" onClick={() => go("hoy")}><Logo /><span className="wordmark">Cruza <span className="brand">el Puente</span></span></button>
-          <span className="spacer" />
-          <span className="pill daypill" title={`Racha: ${streak(st)} días · XP hoy: ${xpToday(st)}`}><span className="flame" data-on={xpToday(st) > 0 || undefined}><IconFlame /></span><b>{streak(st)}</b><span className="sep" aria-hidden="true" /><span className="xp"><b>{xpToday(st)}</b> XP</span></span>
-          <button className={"icon-btn"} aria-current={view === "progreso" ? "page" : undefined} aria-label="Progreso" title="Progreso" onClick={() => go("progreso")}>{ICONS.progreso}</button>
-          <button id="gear" className="icon-btn" aria-current={view === "ajustes" ? "page" : undefined} aria-label="Ajustes" title="Ajustes" onClick={() => go("ajustes")}>{ICONS.ajustes}</button>
-        </header>
-        <nav className="tabs" aria-label="Secciones">
-          {TABS.map(([k, t]) => <button key={k} aria-current={!session && activeTab === k ? "page" : undefined} onClick={() => go(k)}>{ICONS[k]}<span>{t}</span></button>)}
-        </nav>
-        <main id="main">
-          {!session && view === "hoy" && <div style={{ marginTop: 8 }}><LoginBanner /></div>}
-          {body}
-        </main>
+        <AppHeader view={view} />
+        <TabBar view={view} inSession={!!session} />
+        <main id="main">{session ? <Runner key={sessionKey} spec={session} onExit={exitSession} onRestart={start} /> : screenFor(view)}</main>
       </div>
     </NavCtx.Provider>
   );
-}
+};

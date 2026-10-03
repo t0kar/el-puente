@@ -16,6 +16,8 @@ concurrency:
 
 jobs:
   build:
+    # GitHub Pages is the default host; set the repo variable HOSTING=firebase to switch (deploy-firebase.yml)
+    if: ${{ vars.HOSTING != 'firebase' }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -24,6 +26,7 @@ jobs:
           node-version: 22
           cache: npm
       - run: npm ci
+      - run: npm run check
       - run: npm run build
         env:
           BASE: /${{ github.event.repository.name }}/

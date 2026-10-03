@@ -1,0 +1,137 @@
+/* Base: reset, typography, focus, utilities, motion */
+* {
+  box-sizing: border-box;
+}
+html,
+body {
+  min-height: 100%;
+  margin: 0;
+}
+body {
+  -webkit-text-size-adjust: 100%;
+  overflow-x: clip;
+}
+body {
+  background: var(--paper);
+  color: var(--text);
+  font: 16px/1.5 var(--f-body);
+  background-image: repeating-linear-gradient(to bottom, transparent 0 31px, var(--rule) 31px 32px);
+  background-attachment: fixed;
+}
+button,
+input {
+  font: inherit;
+  color: inherit;
+}
+button {
+  cursor: pointer;
+}
+:focus-visible {
+  outline: 3px solid var(--brand-strong);
+  outline-offset: 2px;
+  border-radius: 6px;
+}
+h1,
+h2,
+h3 {
+  font-family: var(--f-display);
+  color: var(--ink);
+  text-wrap: balance;
+  margin: 0;
+  line-height: 1.15;
+}
+h1 {
+  font-size: var(--fs-xl);
+  font-weight: 800;
+}
+h2 {
+  font-size: var(--fs-lg);
+  font-weight: 800;
+}
+h3 {
+  font-size: 1.05rem;
+  font-weight: 600;
+}
+p {
+  margin: 0;
+}
+.hand {
+  font-family: var(--f-hand);
+  font-size: 1.15em;
+  color: var(--ink);
+}
+.mark {
+  padding: 0 0.25em;
+  border-radius: 0.2em;
+  box-decoration-break: clone;
+  -webkit-box-decoration-break: clone;
+}
+.mark.green {
+  background: linear-gradient(100deg, transparent 2%, var(--hl-green) 6% 94%, transparent 98%);
+}
+.mark.yellow {
+  background: linear-gradient(100deg, transparent 2%, var(--hl-yellow) 6% 94%, transparent 98%);
+}
+.mark.pink {
+  background: linear-gradient(100deg, transparent 2%, var(--hl-pink) 6% 94%, transparent 98%);
+}
+.mark.blue {
+  background: linear-gradient(100deg, transparent 2%, var(--hl-blue) 6% 94%, transparent 98%);
+}
+.hr {
+  color: var(--ink-soft);
+  font-size: var(--fs-sm);
+}
+.hint {
+  font-size: var(--fs-sm);
+  color: var(--ink-soft);
+}
+.row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
+.stack {
+  display: grid;
+  gap: 10px;
+}
+.grid2 {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 12px;
+}
+details summary {
+  cursor: pointer;
+  font-weight: 700;
+  color: var(--ink);
+}
+.pop {
+  animation: pop 0.35s ease;
+}
+@keyframes pop {
+  0% {
+    transform: scale(0.96);
+  }
+  60% {
+    transform: scale(1.02);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation: none !important;
+    transition: none !important;
+  }
+}
+/* visually hidden, still read by screen readers */
+.sr {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}

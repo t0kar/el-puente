@@ -1,5 +1,5 @@
 // Gaps: {option1|correct*|option3::explanation}. Optional u: update id.
-import type { Story } from "../lib/types";
+import type { Story } from "../../lib/types";
 
 export const STORIES: Story[] = [
 {id:"s1", g:"ser, llamarse, género", t:"Paco se presenta", hr:"Paco je hobotnica iz Zaragoze i kuhar. Ima osam ruku pa radi brže od svih. Njegova prijateljica Lola je novinarka i Francuskinja. Lola pita gospodina Martíneza kako se zove i odakle je, a on je jako formalan.",

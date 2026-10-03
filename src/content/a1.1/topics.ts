@@ -2,7 +2,7 @@
 // To mark material from the newest class add a 3rd field with the update id from updates.ts:
 //   la camisa | košulja | 2026-10-07
 // A new theme = a new object in TOPICS: {k:"key", t:"Título", hr:"opis", mark:"green"|"yellow"|"pink"|"blue", v:`...`}
-import type { Topic } from "../lib/types";
+import type { Topic } from "../../lib/types";
 
 export const TOPICS: Topic[] = [
 {k:"saludos", t:"Saludos y presentaciones", hr:"pozdravi, upoznavanje", mark:"green", v:`

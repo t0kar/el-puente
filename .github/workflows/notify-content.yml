@@ -1,0 +1,43 @@
+name: New content notification
+
+# After a successful deploy, tell subscribed devices about the newest class in src/content/updates.json.
+# Idempotent (each device is notified once per class), so it's safe to run after every deploy.
+on:
+  workflow_run:
+    workflows: ["Deploy to GitHub Pages", "Deploy to Firebase Hosting"]
+    types: [completed]
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: "Dry run (decide, don't send)"
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+concurrency:
+  group: notify-content
+  cancel-in-progress: false
+
+jobs:
+  notify:
+    if: ${{ vars.VITE_VAPID_PUBLIC_KEY != '' && (github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success') }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.workflow_run.head_sha || github.sha }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci --ignore-scripts --no-audit --no-fund
+      - run: node scripts/notify-content.mjs
+        env:
+          FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+          VAPID_PUBLIC_KEY: ${{ vars.VITE_VAPID_PUBLIC_KEY }}
+          VAPID_PRIVATE_KEY: ${{ secrets.VAPID_PRIVATE_KEY }}
+          VAPID_SUBJECT: ${{ vars.VAPID_SUBJECT }}
+          DRY_RUN: ${{ inputs.dry_run && '1' || '' }}

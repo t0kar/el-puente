@@ -1,5 +1,5 @@
 // type: o-ue | e-ie | e-i | u-ue (stem change) · refl: reflexive · irr: 6 forms override. Optional u: update id.
-import type { Verb } from "../lib/types";
+import type { Verb } from "../../lib/types";
 
 export const VERBS: Verb[] = [
  {inf:"trabajar", hr:"raditi"}, {inf:"comer", hr:"jesti"}, {inf:"vivir", hr:"živjeti"},

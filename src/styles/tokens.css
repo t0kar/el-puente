@@ -1,0 +1,109 @@
+/* Design tokens — the only place for raw colours, fonts, sizes. Light by default; dark via the OS
+   (unless the user picked "Claro") or <html data-theme="dark">. Keep both dark blocks identical. */
+:root {
+  /* colour: notebook paper + ink + highlighters + school orange (brand) */
+  --paper: #fbfaf5;
+  --paper-2: #f2f0e6;
+  --rule: #e4ebf5;
+  --ink: #1d2f6f;
+  --ink-soft: #56628c;
+  --text: #1e2233;
+  --hl-green: #b9f27a;
+  --hl-yellow: #ffe66b;
+  --hl-pink: #ffa8d6;
+  --hl-blue: #9fe3fb;
+  --ok: #1f8a4c;
+  --ok-bg: #dcf5e5;
+  --bad: #c2334d;
+  --bad-bg: #fde3e8;
+  --warn: #9a6b00;
+  --warn-bg: #fff3c8;
+  --brand: #f26b1d;
+  --brand-strong: #c2410c;
+  --on-brand: #ffffff;
+  --brand-soft: #ffe8d9;
+  --card: #ffffff;
+  --line: #e3e1d6;
+  --shadow: 0 1px 0 rgba(30, 34, 51, 0.05), 0 6px 18px -10px rgba(30, 34, 51, 0.22);
+  /* type */
+  --f-display: "Bricolage Grotesque", system-ui, sans-serif;
+  --f-body: "Atkinson Hyperlegible", system-ui, sans-serif;
+  --f-hand: "Gochi Hand", "Comic Sans MS", cursive;
+  --f-mono: "JetBrains Mono", ui-monospace, monospace;
+  --fs-xs: 0.75rem;
+  --fs-sm: 0.88rem;
+  --fs-md: 1rem;
+  --fs-lg: 1.25rem;
+  --fs-xl: 1.7rem;
+  /* spacing (4px grid) */
+  --sp-1: 4px;
+  --sp-2: 8px;
+  --sp-3: 12px;
+  --sp-4: 16px;
+  --sp-5: 24px;
+  --sp-6: 32px;
+  /* radius */
+  --r-sm: 8px;
+  --r-md: 12px;
+  --r: 14px;
+  --r-lg: 18px;
+  --r-pill: 999px;
+  /* sizes */
+  --tap: 44px;
+  --hdr-h: 56px;
+  --content-w: 760px;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --paper: #14171f;
+    --paper-2: #1b1f2a;
+    --rule: #232a3a;
+    --ink: #a9bcff;
+    --ink-soft: #8d97b8;
+    --text: #e6e8f0;
+    --hl-green: #5c8a2a;
+    --hl-yellow: #8a7414;
+    --hl-pink: #8f3d6b;
+    --hl-blue: #24708c;
+    --ok: #6fdc9b;
+    --ok-bg: #173826;
+    --bad: #ff8fa3;
+    --bad-bg: #3d1a23;
+    --warn: #ffd66b;
+    --warn-bg: #3a3012;
+    --brand: #ff8a3d;
+    --brand-strong: #ff8a3d;
+    --on-brand: #1a1206;
+    --brand-soft: #3a2416;
+    --card: #1c212d;
+    --line: #2b3242;
+    --shadow: 0 1px 0 rgba(0, 0, 0, 0.3), 0 8px 20px -12px rgba(0, 0, 0, 0.6);
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --paper: #14171f;
+  --paper-2: #1b1f2a;
+  --rule: #232a3a;
+  --ink: #a9bcff;
+  --ink-soft: #8d97b8;
+  --text: #e6e8f0;
+  --hl-green: #5c8a2a;
+  --hl-yellow: #8a7414;
+  --hl-pink: #8f3d6b;
+  --hl-blue: #24708c;
+  --ok: #6fdc9b;
+  --ok-bg: #173826;
+  --bad: #ff8fa3;
+  --bad-bg: #3d1a23;
+  --warn: #ffd66b;
+  --warn-bg: #3a3012;
+  --brand: #ff8a3d;
+  --brand-strong: #ff8a3d;
+  --on-brand: #1a1206;
+  --brand-soft: #3a2416;
+  --card: #1c212d;
+  --line: #2b3242;
+  --shadow: 0 1px 0 rgba(0, 0, 0, 0.3), 0 8px 20px -12px rgba(0, 0, 0, 0.6);
+  color-scheme: dark;
+}

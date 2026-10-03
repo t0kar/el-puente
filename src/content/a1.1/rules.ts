@@ -1,5 +1,5 @@
 // [sentence with ___, options, index of correct option, explanation (hr), topic or update id]
-import type { Rule } from "../lib/types";
+import type { Rule } from "../../lib/types";
 
 export const RULES: Rule[] = [
 ["Yo ___ de Croacia.", ["soy","estoy","hay"],0,"Podrijetlo = SER (trajno).",6],
