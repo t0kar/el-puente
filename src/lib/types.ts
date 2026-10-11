@@ -38,6 +38,8 @@ export interface Verb {
   type?: StemType;
   refl?: boolean;
   irr?: string[];
+  /** imperative [tú, usted] when it can't be derived (irregular, reflexive), e.g. ven / venga */
+  imp?: [string, string];
   note?: string;
   u?: string;
   x?: Cefr;
@@ -65,9 +67,16 @@ export interface Story {
   u?: string;
   lvl?: Level;
 }
+/** Chuleta section a grammar sheet belongs to (labels in features/sheets/Sheets.tsx) */
+export type SheetCat = "verbos" | "imperativo" | "usos" | "nombres" | "preposiciones" | "numeros" | "sonidos";
+
 export interface Sheet {
   t: string;
   mark: Mark;
+  /** Chuleta section */
+  cat: SheetCat;
+  /** one plain Croatian line: when / why you use this */
+  hr: string;
   html: string;
   u?: string;
   lvl?: Level;

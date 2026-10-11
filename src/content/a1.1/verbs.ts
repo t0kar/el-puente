@@ -1,4 +1,5 @@
-// type: o-ue | e-ie | e-i | u-ue (stem change) · refl: reflexive · irr: 6 forms override. Optional u: update id.
+// type: o-ue | e-ie | e-i | u-ue (stem change) · refl: reflexive · irr: 6 forms override · imp: [tú, usted] imperative override
+// (irregular or reflexive; verbs with imp join the Imperativo drill). Optional u: update id.
 // x: "A2" | "B1" when the verb is above the course level (hidden when Ajustes → Expresiones avanzadas = Ocultar).
 import type { Verb } from "../../lib/types";
 
@@ -16,24 +17,24 @@ export const VERBS: Verb[] = [
  {inf:"dormir", hr:"spavati", type:"o-ue"}, {inf:"volver", hr:"vratiti se", type:"o-ue"},
  {inf:"almorzar", hr:"ručati", type:"o-ue"}, {inf:"poder", hr:"moći", type:"o-ue"},
  {inf:"encontrar", hr:"naći", type:"o-ue"}, {inf:"recordar", hr:"sjećati se", type:"o-ue"},
- {inf:"acostarse", hr:"leći (u krevet), ići spavati", type:"o-ue", refl:true},
+ {inf:"acostarse", hr:"leći (u krevet), ići spavati", type:"o-ue", refl:true, imp:["acuéstate","acuéstese"]},
  {inf:"empezar", hr:"početi", type:"e-ie"}, {inf:"preferir", hr:"više voljeti", type:"e-ie"},
  {inf:"querer", hr:"htjeti, voljeti", type:"e-ie"}, {inf:"entender", hr:"razumjeti", type:"e-ie"},
  {inf:"mentir", hr:"lagati", type:"e-ie", x:"A2"},
- {inf:"despertarse", hr:"probuditi se", type:"e-ie", refl:true},
- {inf:"sentarse", hr:"sjesti", type:"e-ie", refl:true}, {inf:"sentirse", hr:"osjećati se", type:"e-ie", refl:true},
+ {inf:"despertarse", hr:"probuditi se", type:"e-ie", refl:true, imp:["despiértate","despiértese"]},
+ {inf:"sentarse", hr:"sjesti", type:"e-ie", refl:true, imp:["siéntate","siéntese"]}, {inf:"sentirse", hr:"osjećati se", type:"e-ie", refl:true},
  {inf:"repetir", hr:"ponoviti", type:"e-i"}, {inf:"pedir", hr:"naručiti, tražiti", type:"e-i"},
- {inf:"vestirse", hr:"obući se", type:"e-i", refl:true},
+ {inf:"vestirse", hr:"obući se", type:"e-i", refl:true, imp:["vístete","vístase"]},
  {inf:"jugar", hr:"igrati", type:"u-ue"},
- {inf:"levantarse", hr:"ustati", refl:true}, {inf:"llamarse", hr:"zvati se", refl:true},
- {inf:"ducharse", hr:"tuširati se", refl:true}, {inf:"lavarse", hr:"prati se", refl:true},
+ {inf:"levantarse", hr:"ustati", refl:true, imp:["levántate","levántese"]}, {inf:"llamarse", hr:"zvati se", refl:true},
+ {inf:"ducharse", hr:"tuširati se", refl:true, imp:["dúchate","dúchese"]}, {inf:"lavarse", hr:"prati se", refl:true},
  {inf:"afeitarse", hr:"brijati se", refl:true}, {inf:"peinarse", hr:"češljati se", refl:true},
- {inf:"ser", hr:"biti", irr:["soy","eres","es","somos","sois","son"]},
+ {inf:"ser", hr:"biti", irr:["soy","eres","es","somos","sois","son"], imp:["sé","sea"]},
  {inf:"estar", hr:"biti (stanje, mjesto)", irr:["estoy","estás","está","estamos","estáis","están"]},
- {inf:"tener", hr:"imati", irr:["tengo","tienes","tiene","tenemos","tenéis","tienen"], note:"yo: -go; tú, él, ellos: e→ie"},
- {inf:"ir", hr:"ići", irr:["voy","vas","va","vamos","vais","van"]},
- {inf:"salir", hr:"izaći", irr:["salgo","sales","sale","salimos","salís","salen"], note:"samo yo: salgo"},
+ {inf:"tener", hr:"imati", irr:["tengo","tienes","tiene","tenemos","tenéis","tienen"], imp:["ten","tenga"], note:"yo: -go; tú, él, ellos: e→ie"},
+ {inf:"ir", hr:"ići", irr:["voy","vas","va","vamos","vais","van"], imp:["ve","vaya"]},
+ {inf:"salir", hr:"izaći", irr:["salgo","sales","sale","salimos","salís","salen"], imp:["sal","salga"], note:"samo yo: salgo"},
  {inf:"saber", hr:"znati", irr:["sé","sabes","sabe","sabemos","sabéis","saben"], note:"samo yo: sé"},
- {inf:"decir", hr:"reći", irr:["digo","dices","dice","decimos","decís","dicen"], note:"yo: -go; tú, él, ellos: e→i"},
- {inf:"hacer", hr:"raditi, činiti", irr:["hago","haces","hace","hacemos","hacéis","hacen"], note:"samo yo: hago"}
+ {inf:"decir", hr:"reći", irr:["digo","dices","dice","decimos","decís","dicen"], imp:["di","diga"], note:"yo: -go; tú, él, ellos: e→i"},
+ {inf:"hacer", hr:"raditi, činiti", irr:["hago","haces","hace","hacemos","hacéis","hacen"], imp:["haz","haga"], note:"samo yo: hago"}
 ];

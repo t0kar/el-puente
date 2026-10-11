@@ -74,10 +74,13 @@ Pravila:
 { inf: "mentir", hr: "lagati", type: "e-ie", x: "A2" },                               // teže od razine tečaja
 { inf: "probar", hr: "probati", type: "o-ue", u: "2026-10-07" },                      // promjena u čizmi
 { inf: "ponerse", hr: "obući", refl: true, irr: ["pongo", …], note: "yo: -go" },     // nepravilan: 6 oblika (bez zamjenice)
+{ inf: "venir", hr: "doći", irr: ["vengo", …], imp: ["ven", "venga"], note: "…" },  // imp = imperativ [tú, usted]
 ```
 
 Oblici se računaju automatski (osnova + nastavak, promjena samoglasnika, zamjenica). Glagoli s `type` sami se pojavljuju u
 interaktivnoj čizmi. Nepravilan glagol pojavljuje se u čizmi ako u `note` piše promjena, npr. `e→ie`.
+Imperativ se računa samo za pravilne glagole; za nepravilne i povratne upiši ga u `imp` (`["dúchate", "dúchese"]`)
+pa i oni ulaze u vježbu Imperativo.
 
 ## 4. Pravila → `<razina>/rules.ts`
 
@@ -94,7 +97,9 @@ Napomene u zagradama u `q` ne izgovaraju se. Točno jedna opcija smije biti toč
 - **Priče:** praznina je `{opcija|točna*|opcija::objašnjenje}`. Rečenice neka završavaju s `. ! ?` jer čitač čita rečenicu po rečenicu.
   Ako bi i druga opcija bila točna, dodaj kratku rečenicu konteksta u tekst (ne zagrade: tekst se čita naglas i koristi za diktat).
 - **Gramatika:** HTML blokovi su opisani na vrhu `a1.1/sheets.ts`: `formula`, tablica `para`, `rules` (pravilo + primjer), `words` (riječi kao oblačići).
-  Španjolski primjeri idu u `<i>…</i>` i tada se izgovaraju na dodir.
+  Španjolski primjeri idu u `<i>…</i>` i tada se izgovaraju na dodir. Svaki list treba `cat` (tema u Chuleti: `verbos`, `imperativo`,
+  `usos`, `nombres`, `preposiciones`, `numeros`, `sonidos`) i `hr` (jedna jednostavna rečenica: čemu služi). Objasni svako pravilo
+  hrvatskom rečenicom i prevedi važne primjere (`<i>Voy a casa.</i> = Idem kući.`). Nikad samo formula bez objašnjenja.
 
 ## 6. Razine
 

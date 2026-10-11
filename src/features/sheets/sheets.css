@@ -1,0 +1,92 @@
+/* Chuleta: search, topic chips, grouped collapsible sheets (sheet bodies are styled in styles/components.css) */
+.sheet-tools {
+  display: grid;
+  gap: var(--sp-3);
+}
+.sheet-cats {
+  display: flex;
+  gap: var(--sp-2);
+  overflow-x: auto;
+  padding-bottom: var(--sp-1);
+  scrollbar-width: none;
+}
+@media (min-width: 820px) {
+  .sheet-cats {
+    flex-wrap: wrap;
+  }
+}
+.sheet-cats .chip {
+  flex: none;
+  min-height: var(--tap);
+  font-size: var(--fs-sm);
+}
+.sheet-group {
+  display: grid;
+  gap: var(--sp-2);
+}
+.sheet-group > h2 {
+  font-size: var(--fs-md);
+  margin-top: var(--sp-3);
+}
+.sheet-group > h2 .hr {
+  font-weight: 400;
+}
+
+details.sheet {
+  display: block;
+  padding: 0;
+}
+details.sheet > summary {
+  list-style: none;
+  cursor: pointer;
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: center;
+  gap: var(--sp-1) var(--sp-3);
+  min-height: var(--tap);
+  padding: var(--sp-3) var(--sp-4);
+  border-radius: var(--r);
+}
+details.sheet > summary::-webkit-details-marker {
+  display: none;
+}
+/* chevron */
+details.sheet > summary::after {
+  content: "";
+  grid-column: 2;
+  grid-row: 1 / span 2;
+  width: 9px;
+  height: 9px;
+  margin: 0 4px 4px;
+  border-right: 2px solid var(--ink-soft);
+  border-bottom: 2px solid var(--ink-soft);
+  transform: rotate(45deg);
+  transition: transform 0.2s ease;
+}
+details.sheet[open] > summary::after {
+  transform: rotate(-135deg);
+  margin: 4px 4px 0;
+}
+details.sheet > summary:hover .mark {
+  filter: brightness(0.97);
+}
+.sheet-title {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--sp-2);
+}
+.sheet-title .badge {
+  margin-left: 0;
+}
+details.sheet > summary .hr {
+  grid-column: 1;
+  font-weight: 400;
+}
+.sheet-inner {
+  display: grid;
+  gap: 10px;
+  padding: 0 var(--sp-4) var(--sp-4);
+  border-top: 1px dashed var(--line);
+  padding-top: var(--sp-3);
+}

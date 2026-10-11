@@ -46,6 +46,11 @@ export const conj = (v: Verb, p: number) => {
   return { form: full, changed, formula, inBoot, naive };
 };
 export const imperative = (v: Verb, who: "tu" | "usted") => {
+  if (v.imp) {
+    const form = v.imp[who === "tu" ? 0 : 1];
+    const how = v.refl ? `zamjenica na kraj (${who === "tu" ? "te" : "se"}), naglasak ostaje` : "nepravilno";
+    return { form, formula: `${who === "tu" ? "tú" : "usted"}: <b>${esc(form)}</b> · ${how}` };
+  }
   const g = v.inf.slice(-2),
     stem = v.inf.slice(0, -2);
   if (who === "tu") return { form: stem + (g === "ar" ? "a" : "e"), formula: `tú = oblik za él: ${esc(stem)} + <u>${g === "ar" ? "a" : "e"}</u>` };

@@ -50,4 +50,12 @@ describe("imperative", () => {
     expect(imperative({ inf: "pagar", hr: "" }, "tu").form).toBe("paga");
     expect(imperative({ inf: "comer", hr: "" }, "usted").form).toBe("coma");
   });
+  it("uses the imp override for irregular and reflexive verbs", () => {
+    const venir: Verb = { inf: "venir", hr: "", irr: ["vengo", "vienes", "viene", "venimos", "venís", "vienen"], imp: ["ven", "venga"] };
+    expect(imperative(venir, "tu").form).toBe("ven");
+    expect(imperative(venir, "usted").form).toBe("venga");
+    const ducharse: Verb = { inf: "ducharse", hr: "", refl: true, imp: ["dúchate", "dúchese"] };
+    expect(imperative(ducharse, "tu").form).toBe("dúchate");
+    expect(imperative(ducharse, "usted").form).toBe("dúchese");
+  });
 });

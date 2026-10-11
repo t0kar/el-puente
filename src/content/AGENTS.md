@@ -39,12 +39,17 @@ Class notes, board photos and course books are **input, not truth**. Check every
   (see `lib/check.ts`, `lib/speech.ts`).
 - Verbs: regular `{inf, hr}`; stem change `type: "o-ue" | "e-ie" | "e-i" | "u-ue"`; reflexive `refl: true`; irregular `irr: [6 forms]`
   plus `note` (put a vowel change like `e→ie` in the note so it shows up in la bota).
+  Imperatives that can't be derived (irregular `ven/venga`, reflexive `dúchate/dúchese`): `imp: [tú, usted]` — only verbs that are
+  regular or have `imp` join the Imperativo drill.
 - Rules: `{q: "sentence with one ___", o: [options], a: correct index, hr: "Croatian explanation", u?, x?}`. Notes in `(…)` in `q`
   aren't spoken. Verbs take `x` too.
 - Stories: gap = `{option|correct*|option::Croatian explanation}`, exactly one `*`. Keep sentences ending in `. ! ?` so the
   reader splits them well.
 - Sheets: HTML snippets using the blocks in `sheets.ts`'s header (`.formula`, `table.para`, `ul.rules`, `.words`, `.duo`).
   Put Spanish examples in `<i>` (they become tap-to-hear); Croatian prose is fine. `widget: "boot"` appends the interactive la bota.
+  Every sheet needs `cat` (Chuleta section, `SheetCat` in `lib/types.ts`) and `hr` (one plain Croatian line: when/why you use it).
+  **Explain, don't just list:** a Croatian sentence saying what the rule means, a Croatian explanation in every rule row, and
+  translations of key examples (`<i>Voy a casa.</i> = Idem kući.`). Read it as a beginner would: no bare formulas, no unexplained lines.
 - Content files are excluded from Prettier on purpose (long one-line entries). Keep the existing style.
 
 ## Adding a class (scans → app)
