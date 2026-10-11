@@ -46,6 +46,16 @@ describe("course content", () => {
     for (const x of [...TOPICS, ...VERBS, ...STORIES, ...SHEETS, ...RULES]) expect(levelIds).toContain(x.lvl);
   });
 
+  it("sheets have a Chuleta section, a Croatian context line and a unique title", () => {
+    const cats = ["verbos", "imperativo", "usos", "nombres", "preposiciones", "numeros", "sonidos"];
+    for (const s of SHEETS) {
+      expect(cats, s.t).toContain(s.cat);
+      expect(s.hr.trim().length, `${s.t}: hr`).toBeGreaterThan(10);
+    }
+    const titles = SHEETS.map(s => s.t);
+    expect(new Set(titles).size).toBe(titles.length);
+  });
+
   it("rules have one gap, 2+ distinct options and an answer that exists", () => {
     for (const r of RULES) {
       expect(r.q.split("___").length, r.q).toBe(2);

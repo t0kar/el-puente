@@ -24,7 +24,8 @@ Read `src/content/AGENTS.md` first. It has the data rules. `docs/ADDING_CONTENT.
 5. **Grammar** from the class:
    - verbs → `verbs.ts` (with `type` / `refl` / `irr`)
    - 2–4 quick rules → `rules.ts` (`{q, o, a, hr, u}`, exactly one correct option)
-   - a short summary → `sheets.ts` (reuse the HTML blocks)
+   - a short summary → `sheets.ts` (reuse the HTML blocks), with `cat` + `hr` and a Croatian explanation for every rule and
+     key example. Never a bare formula: a beginner must understand it without the teacher.
    - optionally a short Paco story with 5–8 gaps → `stories.ts`
      Tag everything with `u: "<id>"`.
 6. **Croatian** explanations are short and natural, written for adult beginners.
