@@ -42,4 +42,12 @@ describe("imperative", () => {
     expect(imperative({ inf: "cortar", hr: "" }, "usted").form).toBe("corte");
     expect(imperative({ inf: "abrir", hr: "" }, "usted").form).toBe("abra");
   });
+  it("keeps the sound in the usted imperative (pagar → pague, llegar → llegue, buscar → busque, cruzar → cruce)", () => {
+    expect(imperative({ inf: "pagar", hr: "" }, "usted").form).toBe("pague");
+    expect(imperative({ inf: "llegar", hr: "" }, "usted").form).toBe("llegue");
+    expect(imperative({ inf: "buscar", hr: "" }, "usted").form).toBe("busque");
+    expect(imperative({ inf: "cruzar", hr: "" }, "usted").form).toBe("cruce");
+    expect(imperative({ inf: "pagar", hr: "" }, "tu").form).toBe("paga");
+    expect(imperative({ inf: "comer", hr: "" }, "usted").form).toBe("coma");
+  });
 });

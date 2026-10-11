@@ -123,12 +123,15 @@ Postavljanje:
    npx web-push generate-vapid-keys
    ```
 2. GitHub → **Settings → Secrets and variables → Actions**:
-   - **Variables:** `VITE_VAPID_PUBLIC_KEY` = Public Key, `VAPID_SUBJECT` = `mailto:tvoj@email.com`
+   - **Variables:** `VITE_VAPID_PUBLIC_KEY` = Public Key, `VAPID_SUBJECT` = `mailto:tvoj@email.com` (prava adresa; Apple/iPhone odbija obavijesti bez nje)
    - **Secrets:** `VAPID_PRIVATE_KEY` = Private Key
 3. Firebase → **Project settings → Service accounts → Generate new private key** → cijeli sadržaj JSON datoteke spremi kao secret `FIREBASE_SERVICE_ACCOUNT`. (Ta datoteka je tajna, nemoj je commitati.)
 4. Firestore → **Rules** → zalijepi novu verziju [`firestore.rules`](firestore.rules) → **Publish** (pravilo za `users/{uid}/push`).
 5. Ponovno pokreni **Deploy to GitHub Pages** da build dobije javni ključ. Provjera: **Actions → Daily reminders** ili
    **New content notification → Run workflow** s uključenim _Dry run_. U logu piše koliko bi obavijesti bilo poslano.
+6. Provjera do kraja: u aplikaciji **Ajustes → Notificaciones → Probar desde el servidor**. Pri sljedećem pokretanju (≤ 15–30 min)
+   servis pošalje pravu obavijest na taj uređaj. Ako ne stigne, log «Daily reminders» pokazuje grešku po uređaju, npr.
+   `push error web.push.apple.com: 403 {"reason":"BadJwtToken"}` (provjeri `VAPID_SUBJECT` i da su oba VAPID ključa iz istog para).
 
 Napomene:
 
@@ -136,6 +139,18 @@ Napomene:
 - GitHub zna zakasniti s pokretanjem nekoliko minuta, zato se podsjetnik šalje u prozoru od 2 sata nakon odabranog vremena, najviše jednom dnevno.
 - O satu starijem od 10 dana obavijest se ne šalje.
 - GitHub pauzira zakazane workflowe nakon 60 dana bez aktivnosti u repozitoriju. Tada ih ponovno uključi u **Actions**.
+- Zakazani workflowi rade samo s grane `main`.
+- Ako nedostaje secret ili nijedna obavijest ne prođe, run postane crven i GitHub ti pošalje mail.
+- Aplikacija pri svakom pokretanju (prijavljen korisnik, dopuštene obavijesti) ponovno spremi pretplatu uređaja, pa se sama popravi
+  ako ju je servis obrisao ili ju je preglednik promijenio.
+
+### Prijave grešaka
+
+Korisnik u vježbi dodirne zastavicu (ili Ajustes → Otros → Reportar un problema) i napiše što ne valja. Prijava se sprema u
+Firestore (`reports`), a [`report-issues.yml`](.github/workflows/report-issues.yml) svakih sat vremena od novih prijava napravi
+GitHub issue s oznakom `reporte` (GitHub ti javi mailom). Treba isti secret `FIREBASE_SERVICE_ACCOUNT` i objavljena nova verzija
+[`firestore.rules`](firestore.rules) (pravilo za `reports`). Neprijavljeni korisnici mogu slati prijavu mailom ako postaviš
+varijablu `VITE_REPORT_EMAIL`.
 
 ### 4. Prelazak na Firebase Hosting (kad poželiš ljepšu adresu)
 
@@ -155,6 +170,7 @@ Pripremljeno je, ali isključeno. Adresa će biti `https://<projekt>.web.app`.
 | ----------------------------------------------------------------------------------- | ------------------------------ | --------------------- |
 | `VITE_FIREBASE_API_KEY`, `_AUTH_DOMAIN`, `_PROJECT_ID`, `_APP_ID`                   | `.env.local`, GitHub Variables | ne (javni web config) |
 | `VITE_VAPID_PUBLIC_KEY`, `VAPID_SUBJECT`                                            | `.env.local`, GitHub Variables | ne                    |
+| `VITE_REPORT_EMAIL` (neobavezno, prijave grešaka mailom)                            | `.env.local`, GitHub Variables | ne                    |
 | `VAPID_PRIVATE_KEY`, `FIREBASE_SERVICE_ACCOUNT`, `FIREBASE_HOSTING_SERVICE_ACCOUNT` | samo GitHub Secrets            | **da**                |
 | `HOSTING`                                                                           | GitHub Variables               | ne                    |
 

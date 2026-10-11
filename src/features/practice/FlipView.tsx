@@ -9,6 +9,19 @@ import { Hint } from "../../components/Hint";
 import { SpeakBtn } from "../../components/SpeakBtn";
 import { Feedback } from "./Feedback";
 
+/** example sentence of a card; the Croatian translation follows the "Traducción al croata" setting (Hint) */
+const Example = ({ ex, withHr }: { ex: [string, string]; withHr: boolean }) => (
+  <div className="example">
+    <div className="row" style={{ justifyContent: "space-between", flexWrap: "nowrap" }}>
+      <p>
+        <span className="ex-label">Ejemplo</span> {ex[0]}
+      </p>
+      <SpeakBtn text={ex[0]} label="Escuchar el ejemplo" />
+    </div>
+    {withHr && <Hint block>{ex[1]}</Hint>}
+  </div>
+);
+
 /** spaced-repetition card: reveal (or type), then rate 1–4 */
 export const FlipView = ({ q, onRate }: { q: FlipQ; onRate: (r: 1 | 2 | 3 | 4) => void }) => {
   const settings = useSettings();
@@ -19,6 +32,7 @@ export const FlipView = ({ q, onRate }: { q: FlipQ; onRate: (r: 1 | 2 | 3 | 4) =
   const [shown, setShown] = useState(false);
   const [val, setVal] = useState("");
   const [verdict, setVerdict] = useState<CheckRes | null>(null);
+  const [exOpen, setExOpen] = useState(false);
   const ref = useRef<HTMLInputElement>(null);
   const isNew = !sGet(c.id);
   useEffect(() => {
@@ -63,6 +77,17 @@ export const FlipView = ({ q, onRate }: { q: FlipQ; onRate: (r: 1 | 2 | 3 | 4) =
         {q.dir === "es" && <SpeakBtn text={c.es} />}
       </div>
       <div className="hr">{q.dir === "es" ? "¿Qué significa en croata?" : "¿Cómo se dice en español?"}</div>
+      {/* Spanish → Croatian: the example is a context clue before revealing; the other way round it would give the answer away */}
+      {!shown &&
+        c.ex &&
+        q.dir === "es" &&
+        (exOpen ? (
+          <Example ex={c.ex} withHr={false} />
+        ) : (
+          <button className="chip ex-chip" onClick={() => setExOpen(true)}>
+            Ver un ejemplo
+          </button>
+        ))}
       {typing && (
         <>
           <input
@@ -108,6 +133,7 @@ export const FlipView = ({ q, onRate }: { q: FlipQ; onRate: (r: 1 | 2 | 3 | 4) =
               <div className="ans">{back}</div>
               {q.dir === "hr" && <SpeakBtn text={c.es} />}
             </div>
+            {c.ex && <Example ex={c.ex} withHr />}
           </div>
           <p className="hint">
             ¿Qué tal lo sabías? <Hint>Ocijeni iskreno: "Otra vez" vraća karticu za minutu, "Fácil" je odgađa.</Hint>

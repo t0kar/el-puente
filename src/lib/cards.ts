@@ -2,18 +2,36 @@ import { TOPICS } from "../content";
 import { getState, update } from "./store";
 import { inLevel, lvlOf } from "./level";
 import { stripAcc } from "./check";
-import type { Card, CustomWord, Topic } from "./types";
+import type { Card, Cefr, CustomWord, Topic } from "./types";
+
+const CEFR = new Set<string>(["A2", "B1", "B2"] satisfies Cefr[]);
+/**
+ * One card line: `español | hrvatski` + optional fields in any order: update id `YYYY-MM-DD`, level `A2`/`B1`/`B2`,
+ * example `ej: Frase en español. → Hrvatska rečenica.`. Unrecognised fields are returned in `bad` (content.test.ts fails on them).
+ */
+export const parseCardLine = (line: string) => {
+  const [es = "", hr = "", ...rest] = line.split(" | ").map(s => s.trim());
+  const out: Omit<Card, "id" | "T"> & { bad: string[] } = { es, hr, u: "", bad: [] };
+  for (const f of rest) {
+    const ex = /^ej:\s*(.+?)\s*→\s*(.+)$/.exec(f);
+    if (/^\d{4}-\d{2}-\d{2}$/.test(f)) out.u = f;
+    else if (CEFR.has(f)) out.x = f as Cefr;
+    else if (ex && !ex[2].includes("→")) out.ex = [ex[1], ex[2]];
+    else out.bad.push(f);
+  }
+  return out;
+};
 
 const BASE_CARDS: Card[] = [];
 const seen = new Set<string>();
 for (const T of TOPICS) {
   for (const line of T.v.trim().split("\n")) {
-    const [es, hr, u] = line.split(" | ").map(s => s && s.trim());
-    if (!es || !hr) continue;
-    const key = es.toLowerCase();
+    const { bad: _bad, ...c } = parseCardLine(line);
+    if (!c.es || !c.hr) continue;
+    const key = c.es.toLowerCase();
     if (seen.has(key)) continue;
     seen.add(key);
-    BASE_CARDS.push({ id: es, T: T.k, es, hr, u: u || "" });
+    BASE_CARDS.push({ id: c.es, T: T.k, ...c });
   }
 }
 /** the user's own words live in this pseudo-topic */
@@ -33,10 +51,13 @@ export const customCards = (): Card[] => {
   }
   return customList;
 };
-/** every card of the selected level(s), plus the user's own words */
+/** every card of the selected level(s) (without harder ones when they're switched off), plus the user's own words */
 export const cards = (): Card[] => {
-  return [...BASE_CARDS.filter(c => inLevel(lvlOf(TOPIC_BY_K[c.T]))), ...customCards()];
+  const adv = getState().settings.advanced;
+  return [...BASE_CARDS.filter(c => (adv || !c.x) && inLevel(lvlOf(TOPIC_BY_K[c.T]))), ...customCards()];
 };
+/** level label for the pill: the card's CEFR when it's harder than its course level, else the course level */
+export const cardLevel = (c: Card) => c.x || TOPIC_BY_K[c.T].lvl || "";
 
 // ---- custom words ----
 const norm = (s: string) => stripAcc(s.trim().toLowerCase());

@@ -1,22 +1,31 @@
-import { useRef, useState } from "react";
+import { useCallback, useRef, useState } from "react";
 import type { FlipQ, Question, SessionSpec } from "../../lib/types";
 import { addXP } from "../../lib/store";
 import { schedule, sGet } from "../../lib/srs";
+import { clearMissed, markMissed } from "../../lib/missed";
 import { Ic } from "../../components/icons";
+import { LevelPill } from "../../components/LevelPill";
+import { ReportDialog } from "../../components/ReportDialog";
+import { questionCtx, type ReportCtx } from "../../lib/report";
 import { FlipView } from "./FlipView";
 import { MCView } from "./MCView";
 import { TilesView } from "./TilesView";
 import { TypeView } from "./TypeView";
 import "./practice.css";
 
-/** plays a practice session: a queue of questions, wrong answers come back once, summary at the end */
+/**
+ * Plays a practice session: a queue of questions, summary at the end. A wrong answer comes back once in the same session;
+ * missed again, it moves to the next session (flashcards stay due in SRS, rules/verbs go to lib/missed.ts), so a session
+ * always ends.
+ */
 export const Runner = ({ spec, onExit, onRestart }: { spec: SessionSpec; onExit: () => void; onRestart: (s: SessionSpec) => void }) => {
   const queue = useRef<Question[]>([...spec.questions]);
-  const total = spec.questions.length;
-  const stats = useRef({ done: 0, correct: 0, xp: 0, mistakes: [] as Question[], retried: new Set<Question>() });
+  const stats = useRef({ done: 0, correct: 0, xp: 0, answered: 0, total: spec.questions.length, mistakes: [] as Question[], later: new Set<string>() });
   const [cur, setCur] = useState<Question | null>(() => queue.current.shift() ?? null);
   const [step, setStep] = useState(0);
   const [finished, setFinished] = useState(!cur);
+  const [report, setReport] = useState<ReportCtx | null>(null);
+  const closeReport = useCallback(() => setReport(null), []);
 
   const next = () => {
     const q = queue.current.shift();
@@ -27,8 +36,20 @@ export const Runner = ({ spec, onExit, onRestart }: { spec: SessionSpec; onExit:
     }
     window.scrollTo({ top: 0 });
   };
+  /** first miss: back in a few questions; second miss: next session */
+  const missed = (q: Question, gap: number) => {
+    const s = stats.current;
+    if (!q._retry) {
+      queue.current.splice(Math.min(queue.current.length, gap), 0, { ...q, _counted: true, _retry: true });
+      s.total++;
+    } else if (q.key) {
+      s.later.add(q.key);
+      if (q.kind !== "flip") markMissed(q.key);
+    }
+  };
   const result = (q: Question, ok: boolean, gain: number) => {
     const s = stats.current;
+    s.answered++;
     if (!q._counted) {
       q._counted = true;
       s.done++;
@@ -38,22 +59,20 @@ export const Runner = ({ spec, onExit, onRestart }: { spec: SessionSpec; onExit:
     if (ok) {
       s.xp += gain;
       addXP(gain);
-    }
-    if (!ok && !s.retried.has(q) && q.kind !== "flip") {
-      s.retried.add(q);
-      queue.current.splice(Math.min(queue.current.length, 3), 0, { ...q, _counted: true, _retry: true });
-    }
+      if (q.key) clearMissed(q.key);
+    } else missed(q, 3);
   };
   const rate = (q: FlipQ, r: 1 | 2 | 3 | 4) => {
     if (!q.cram || r === 1 || !sGet(q.card.id)) schedule(q.card.id, r);
     const s = stats.current;
+    s.answered++;
     if (r === 1) {
       if (!q._counted) {
         q._counted = true;
         s.done++;
         s.mistakes.push(q);
       }
-      queue.current.splice(Math.min(queue.current.length, 4), 0, { ...q, _retry: true });
+      missed(q, 4);
     } else {
       if (!q._counted) {
         q._counted = true;
@@ -67,7 +86,7 @@ export const Runner = ({ spec, onExit, onRestart }: { spec: SessionSpec; onExit:
     next();
   };
   const s = stats.current;
-  const pct = Math.min(100, (100 * s.done) / total);
+  const pct = Math.min(100, (100 * s.answered) / s.total);
 
   if (finished) {
     const p = s.done ? Math.round((100 * s.correct) / s.done) : 0;
@@ -101,9 +120,15 @@ export const Runner = ({ spec, onExit, onRestart }: { spec: SessionSpec; onExit:
                     {q.kind === "flip"
                       ? `${q.card.es} = ${q.card.hr}`
                       : `${q.prompt || "Reloj"} → ${q.kind === "mc" ? q.options[q.correct] : q.kind === "tiles" ? q.target.join(" ") : q.answers[0]}`}
+                    {q.key && s.later.has(q.key) && <span className="pill later">próximo repaso</span>}
                   </div>
                 ))}
               </div>
+              {s.later.size > 0 && (
+                <p className="hint" lang="hr">
+                  Što nisi znao/la ni drugi put, vraća se u sljedećem ponavljanju.
+                </p>
+              )}
             </>
           )}
           <div className="row" style={{ justifyContent: "center" }}>
@@ -131,15 +156,19 @@ export const Runner = ({ spec, onExit, onRestart }: { spec: SessionSpec; onExit:
           <i style={{ width: pct + "%" }} />
         </div>
         <span className="mastery">
-          {Math.min(s.done, total)}/{total}
+          {s.answered}/{s.total}
         </span>
       </div>
       <div className="qcard pop" key={step}>
-        <div className="row">
+        <div className="row qhead">
           <span className="qtag">
             {q._retry ? "Otra vez · " : ""}
             {q.tag}
           </span>
+          <LevelPill lvl={q.lvl} hard={q.hard} />
+          <button className="icon-btn sm report-btn" aria-label="Reportar un error" title="Reportar un error" onClick={() => setReport(questionCtx(q))}>
+            <Ic.flag />
+          </button>
         </div>
         {q.kind === "flip" ? (
           <FlipView q={q} onRate={r => rate(q, r)} />
@@ -151,6 +180,7 @@ export const Runner = ({ spec, onExit, onRestart }: { spec: SessionSpec; onExit:
           <TilesView q={q} onResult={(ok, g) => result(q, ok, g)} onNext={next} />
         )}
       </div>
+      {report && <ReportDialog ctx={report} onClose={closeReport} />}
     </div>
   );
 };

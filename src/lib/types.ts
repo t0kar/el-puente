@@ -9,6 +9,9 @@ export interface Update {
   note: string;
 }
 
+/** CEFR level of an item that is harder than its course level (discussed in class; can be hidden in Ajustes) */
+export type Cefr = "A2" | "B1" | "B2";
+
 export interface Topic {
   k: string;
   t: string;
@@ -23,6 +26,9 @@ export interface Card {
   es: string;
   hr: string;
   u: string;
+  x?: Cefr;
+  /** example sentence: [español, hrvatski] */
+  ex?: [string, string];
 }
 
 export type StemType = "o-ue" | "e-ie" | "e-i" | "u-ue";
@@ -34,12 +40,21 @@ export interface Verb {
   irr?: string[];
   note?: string;
   u?: string;
+  x?: Cefr;
   lvl?: Level;
   _imp?: boolean;
 }
 
-/** [sentence with ___, options, correct index, explanation (hr), tag or update id, level] */
-export type Rule = [string, string[], number, string, (number | string)?, Level?];
+/** quick rule: sentence with ___, options, index of the correct option, Croatian explanation */
+export interface Rule {
+  q: string;
+  o: string[];
+  a: number;
+  hr: string;
+  u?: string;
+  x?: Cefr;
+  lvl?: Level;
+}
 
 export interface Story {
   id: string;
@@ -85,6 +100,8 @@ export interface Settings {
   notifyContent: boolean;
   /** daily push reminder; time is local "HH:MM" */
   remind: { on: boolean; time: string };
+  /** include items above the course level (marked A2/B1…) */
+  advanced: boolean;
 }
 
 /** a word the user added; `del` is a tombstone so deletions survive sync */
@@ -105,6 +122,8 @@ export interface AppState {
   seenUpdate: string;
   newDay: { d: string; n: number };
   settings: Settings;
+  /** when each setting was last changed by the user (per-key sync, see mergeStates) */
+  settingsAt: Partial<Record<keyof Settings, number>>;
   updatedAt: number;
   resetAt: number;
 }
@@ -116,7 +135,11 @@ interface QBase {
   grid?: { verb: Verb; person: number };
   _retry?: boolean;
   _counted?: boolean;
+  /** stable id ("card:…", "rule:…", "verb:…") for "next time" and error reports */
   key?: string;
+  /** level pill: course level ("A1.1") or the CEFR of a harder item */
+  lvl?: string;
+  hard?: boolean;
 }
 export interface FlipQ extends QBase {
   kind: "flip";

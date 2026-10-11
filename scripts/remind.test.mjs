@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { localParts } from "./lib/push.mjs";
-import { message, shouldSend, streakBefore } from "./remind.mjs";
+import { localParts, pushHost } from "./lib/push.mjs";
+import { decide, message, shouldSend, streakBefore, wantsTest } from "./remind.mjs";
 
 const user = { settings: { remind: { on: true, time: "19:00" } }, days: { "2026-10-01": 20, "2026-10-02": 15 } };
 const zg = { tz: "Europe/Zagreb" };
@@ -30,5 +30,25 @@ describe("daily reminder", () => {
     expect(streakBefore(user.days, "2026-10-03")).toBe(2);
     expect(message(user, "2026-10-03").body).toContain("2 días");
     expect(message({ days: {} }, "2026-10-03").body).not.toContain("racha");
+  });
+  it("keeps the window open past midnight and counts it as the previous day", () => {
+    const late = { settings: { remind: { on: true, time: "23:30" } }, days: {} };
+    const after = new Date("2026-10-03T22:20:00Z"); // 00:20 on 4 Oct in Zagreb
+    expect(shouldSend(late, zg, after)).toBe("2026-10-03");
+    expect(shouldSend(late, { ...zg, lastSent: "2026-10-03" }, after)).toBeNull();
+    expect(shouldSend({ ...late, days: { "2026-10-03": 5 } }, zg, after)).toBeNull();
+  });
+  it("sends a requested test push once, before anything else", () => {
+    const now = t;
+    const p = { ...zg, testAt: now.getTime() - 60000 };
+    expect(wantsTest(p, now)).toBe(true);
+    expect(decide(user, p, now)).toMatchObject({ payload: { tag: "test" }, stamp: { testSent: now.getTime() } });
+    expect(wantsTest({ ...p, testSent: now.getTime() }, now)).toBe(false);
+    expect(wantsTest({ ...zg, testAt: now.getTime() - 2 * 86400000 }, now)).toBe(false);
+    expect(decide(user, zg, now)).toMatchObject({ stamp: { lastSent: "2026-10-03" } });
+  });
+  it("names the push service without leaking the endpoint", () => {
+    expect(pushHost({ endpoint: "https://web.push.apple.com/QGx…" })).toBe("web.push.apple.com");
+    expect(pushHost(null)).toBe("?");
   });
 });

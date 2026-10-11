@@ -10,5 +10,14 @@ service cloud.firestore {
     match /users/{uid}/push/{device} {
       allow read, write: if request.auth != null && request.auth.uid == uid;
     }
+    // Error reports from the app ("Reportar un error"). Signed-in users can only create their own; nobody reads them in the app.
+    // .github/workflows/report-issues.yml turns them into GitHub issues with a service account.
+    match /reports/{id} {
+      allow create: if request.auth != null
+        && request.resource.data.uid == request.auth.uid
+        && request.resource.data.keys().hasOnly(['uid', 'at', 'ctx', 'text', 'ua', 'url'])
+        && request.resource.data.text is string && request.resource.data.text.size() <= 1000
+        && request.resource.data.ctx is map && request.resource.data.ctx.size() <= 10;
+    }
   }
 }

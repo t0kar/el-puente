@@ -205,3 +205,46 @@
   color: var(--bad);
   font-weight: 700;
 }
+.qhead {
+  align-items: center;
+  gap: var(--sp-2);
+}
+.qhead .report-btn {
+  margin-left: auto;
+}
+.icon-btn.sm {
+  color: var(--ink-soft);
+  border-color: transparent;
+}
+.icon-btn.sm svg {
+  width: 16px;
+  height: 16px;
+}
+.mistakes .pill.later {
+  margin-left: var(--sp-2);
+  padding: 0 8px;
+  font-size: var(--fs-xs);
+}
+/* example sentence on flashcards */
+.example {
+  display: grid;
+  gap: var(--sp-1);
+  padding: var(--sp-2) var(--sp-3);
+  border-left: 3px solid var(--hl-blue);
+  border-radius: var(--r-sm);
+  background: var(--paper);
+}
+.example p {
+  margin: 0;
+  font-size: var(--fs-md);
+}
+.ex-label {
+  font-size: var(--fs-xs);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+  margin-right: var(--sp-1);
+}
+.ex-chip {
+  justify-self: start;
+}

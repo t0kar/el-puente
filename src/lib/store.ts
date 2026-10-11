@@ -1,6 +1,7 @@
 import { useSyncExternalStore } from "react";
 import type { AppState, Level, Settings } from "./types";
 import { todayKey, DAY } from "./util";
+import { RENAMED } from "../content/renamed";
 
 const LS_KEY = "el-puente-v1";
 export const defaultSettings = (): Settings => ({
@@ -17,6 +18,7 @@ export const defaultSettings = (): Settings => ({
   levels: [],
   notifyContent: true,
   remind: { on: false, time: "19:00" },
+  advanced: true,
 });
 export const defaultState = (): AppState => ({
   cards: {},
@@ -27,6 +29,7 @@ export const defaultState = (): AppState => ({
   seenUpdate: "",
   newDay: { d: "", n: 0 },
   settings: defaultSettings(),
+  settingsAt: {},
   updatedAt: 0,
   resetAt: 0,
 });
@@ -40,10 +43,12 @@ const migrateLevels = (v: unknown): Level[] => {
 const normalize = (s: Partial<AppState> | null | undefined): AppState => {
   const st = Object.assign(defaultState(), s || {});
   st.settings = Object.assign(defaultSettings(), st.settings || {});
-  // ids used to be "lesson:es" in the first version -> now "es"
+  st.settingsAt = st.settingsAt || {};
+  // ids used to be "lesson:es" in the first version -> now "es"; corrected Spanish lines keep their progress (content/renamed.ts)
   const cards: AppState["cards"] = {};
   for (const [k, v] of Object.entries(st.cards || {})) {
-    const nk = k.replace(/^\d+:/, "");
+    const bare = k.replace(/^\d+:/, "");
+    const nk = RENAMED[bare] ?? bare;
     if (!cards[nk] || (v.t || 0) > (cards[nk].t || 0)) cards[nk] = v;
   }
   st.cards = cards;
@@ -92,6 +97,7 @@ export const update = (fn: (s: AppState) => void, opts: { remote?: boolean } = {
     stories: { ...state.stories },
     custom: { ...state.custom },
     settings: { ...state.settings },
+    settingsAt: { ...state.settingsAt },
     newDay: { ...state.newDay },
   };
   fn(next);
@@ -118,7 +124,33 @@ export const useSettings = () => useAppState().settings;
 export const setSetting = <K extends keyof Settings>(k: K, v: Settings[K]) => {
   update(s => {
     s.settings[k] = v;
+    s.settingsAt[k] = Date.now();
   });
+};
+
+/**
+ * Each setting comes from the device that changed it last. Without timestamps (data from older versions) a changed value beats
+ * a default, then the state saved last wins. So a fresh device (e.g. the iPhone home-screen app, which has its own storage)
+ * can't overwrite the reminder set elsewhere just because it practised more recently.
+ */
+const mergeSettings = (a: AppState, b: AppState) => {
+  const def = defaultSettings();
+  const newer = (b.updatedAt || 0) > (a.updatedAt || 0) ? b : a;
+  const out = { ...def } as Record<keyof Settings, unknown>;
+  const at: AppState["settingsAt"] = {};
+  for (const k of Object.keys(def) as (keyof Settings)[]) {
+    const ta = a.settingsAt[k] || 0,
+      tb = b.settingsAt[k] || 0;
+    let from: AppState;
+    if (ta !== tb) from = ta > tb ? a : b;
+    else {
+      const isDef = (s: AppState) => JSON.stringify(s.settings[k]) === JSON.stringify(def[k]);
+      from = isDef(a) !== isDef(b) ? (isDef(a) ? b : a) : newer;
+    }
+    out[k] = from.settings[k];
+    if (ta || tb) at[k] = Math.max(ta, tb);
+  }
+  return { settings: out as unknown as Settings, settingsAt: at };
 };
 
 export const mergeStates = (a0: AppState, b0: AppState): AppState => {
@@ -156,7 +188,7 @@ export const mergeStates = (a0: AppState, b0: AppState): AppState => {
   out.custom = { ...(a0.custom || {}) };
   for (const [k, v] of Object.entries(b0.custom || {})) if (!out.custom[k] || v.t > out.custom[k].t) out.custom[k] = v;
   const newer = (b.updatedAt || 0) > (a.updatedAt || 0) ? b : a;
-  out.settings = { ...defaultSettings(), ...newer.settings };
+  Object.assign(out, mergeSettings(a, b));
   out.newDay = newer.newDay;
   out.seenUpdate = (a.seenUpdate || "") > (b.seenUpdate || "") ? a.seenUpdate : b.seenUpdate; // ids are dates
   out.updatedAt = Math.max(a.updatedAt || 0, b.updatedAt || 0);

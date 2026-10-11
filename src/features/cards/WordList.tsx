@@ -2,6 +2,7 @@ import { useMemo, useState } from "react";
 import { TOPIC_BY_K } from "../../lib/cards";
 import { stripAcc } from "../../lib/check";
 import { speak } from "../../lib/speech";
+import { LevelPill } from "../../components/LevelPill";
 import type { Card } from "../../lib/types";
 
 /** searchable list of every active card; tap a word to hear it */
@@ -25,7 +26,8 @@ export const WordList = ({ all }: { all: Card[] }) => {
                 <td>
                   <button type="button" className="linkish" title="Escuchar" onClick={() => speak(c.es)}>
                     {c.es}
-                  </button>
+                  </button>{" "}
+                  {c.x && <LevelPill lvl={c.x} hard />}
                 </td>
                 <td className="hr" lang="hr">
                   {c.hr}

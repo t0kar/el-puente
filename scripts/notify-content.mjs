@@ -3,7 +3,7 @@
 //   node scripts/notify-content.mjs            send (same secrets as remind.mjs)
 //   DRY_RUN=1 node scripts/notify-content.mjs  decide and log, send nothing
 import { readFileSync } from "node:fs";
-import { isMain, runSender } from "./lib/push.mjs";
+import { isMain, runMain } from "./lib/push.mjs";
 
 /** don't announce a class that's older than this (e.g. a deploy weeks later for something unrelated) */
 const MAX_AGE_DAYS = 10;
@@ -26,10 +26,7 @@ if (isMain(import.meta.url)) {
   const latest = updates.at(-1);
   if (!latest) console.log("notify-content: no updates yet — nothing to announce.");
   else
-    runSender("notify-content", (user, p, now) =>
+    runMain("notify-content", (user, p, now) =>
       shouldNotify(user, p, latest, now) ? { payload: contentMessage(latest), stamp: { lastContent: latest.id } } : null,
-    ).catch(e => {
-      console.error(e);
-      process.exit(1);
-    });
+    );
 }

@@ -25,12 +25,29 @@ Dodaj unos **na kraj** liste. Id je datum sata (`GGGG-MM-DD`), a note je kratak 
 Zadnji unos je "zadnji sat". Na početnoj stranici pojavljuje se kartica **Novedades** s oznakom «Nuevo» (i točka na kartici Hoy),
 a **Antes de clase** ponavlja baš to gradivo.
 
+## 0. Sve provjeri, i ono iz bilježnice
+
+Gradivo iz bilježnice, s ploče ili iz materijala nije automatski točno. Prije unosa provjeri:
+
+- je li španjolski ispravan (naglasci, rod, slaganje) i prirodan u Španjolskoj; latinoamerička riječ ide kao alternativa (`el cacahuete = el maní`),
+- je li hrvatski prijevod točan i standardan,
+- ima li zadatak **točno jedan** točan odgovor. Ako bi i drugi odgovor bio točan, dodaj kontekst: `(tú)`, `(yo)`, `(slažem se)` / `(ne slažem se)`,
+  ili zamijeni ometajuću opciju. Primjer: «— A mí no me gusta estudiar. — A mí ___.» bez oznake prihvaća i _sí_ i _tampoco_,
+- je li izraz teži od razine tečaja: tada mu dodaj oznaku `A2` / `B1` / `B2` (vidi dolje).
+
+Greške u izvoru ispravi, a sumnje zapiši i pitaj.
+
 ## 2. Riječi → `<razina>/topics.ts`
 
-Svaka linija je jedna kartica: `español | hrvatski | id sata`:
+Svaka linija je jedna kartica: `español | hrvatski`, pa neobavezna polja (svako iza `|`, ovim redom):
+
+- id sata: `2026-10-07`
+- razina, samo ako je izraz teži od razine tečaja: `A2`, `B1` ili `B2` (u vježbi dobije žutu oznaku; Ajustes → Expresiones avanzadas ga može sakriti)
+- rečenica-primjer: `ej: Španjolska rečenica. → Hrvatski prijevod.` (kratka, A1 gramatika; pokazuje se uz karticu)
 
 ```
-la camisa | košulja | 2026-10-07
+la camisa | košulja | 2026-10-07 | ej: Paco lleva una camisa azul. → Paco nosi plavu košulju.
+el soborno | mito | B2 | ej: El político acepta un soborno. → Političar prima mito.
 ```
 
 Riječ ide u temu kojoj pripada. Nova tema je novi objekt u `TOPICS` (ključ `k` mora biti jedinstven u svim razinama):
@@ -46,12 +63,15 @@ Pravila:
 - Alternative: `el zumo = el jugo` (prihvaćaju se obje), rodovi: `cansado / cansada`, suprotnosti: `fácil ≠ difícil`.
 - Napomene u zagradama ne izgovaraju se i ne provjeravaju: `la planta (del edificio)`.
 - Ista španjolska riječ smije se pojaviti samo jednom, u svim razinama (test to provjerava).
-- **Napredak je vezan uz španjolski tekst.** Ispravak u španjolskom resetira tu karticu svima. Hrvatski dio smiješ slobodno mijenjati.
+- **Napredak je vezan uz španjolski tekst.** Ako ispraviš španjolski, upiši `"staro": "novo"` u `src/content/renamed.ts`, inače se ta
+  kartica svima resetira. Hrvatski dio i primjer smiješ slobodno mijenjati.
+- Primjer: svaka riječ ili kratki izraz neka ima `ej:`. Kartica koja je već cijela rečenica (`¿Cómo te llamas?`) ne treba ga.
 
 ## 3. Glagoli → `<razina>/verbs.ts`
 
 ```ts
 { inf: "llevar", hr: "nositi", u: "2026-10-07" },                                     // pravilan
+{ inf: "mentir", hr: "lagati", type: "e-ie", x: "A2" },                               // teže od razine tečaja
 { inf: "probar", hr: "probati", type: "o-ue", u: "2026-10-07" },                      // promjena u čizmi
 { inf: "ponerse", hr: "obući", refl: true, irr: ["pongo", …], note: "yo: -go" },     // nepravilan: 6 oblika (bez zamjenice)
 ```
@@ -62,12 +82,17 @@ interaktivnoj čizmi. Nepravilan glagol pojavljuje se u čizmi ako u `note` piš
 ## 4. Pravila → `<razina>/rules.ts`
 
 ```ts
-["Mañana ___ a comer paella.", ["voy","va","vamos"], 0, "ir a + infinitiv = budućnost.", "2026-10-07"],
+{q:"Mañana ___ a comer paella.", o:["voy","va","vamos"], a:0, hr:"ir a + infinitiv = budućnost.", u:"2026-10-07"},
+{q:"(tú) ¿___ a qué hora empieza la clase?", o:["Sabes","Sabe","Sé"], a:0, hr:"tú → SABES. (usted → sabe)"},
 ```
+
+`q` rečenica s jednom prazninom `___`, `o` opcije, `a` indeks točne, `hr` objašnjenje, `u` id sata, `x` razina ako je teže.
+Napomene u zagradama u `q` ne izgovaraju se. Točno jedna opcija smije biti točna.
 
 ## 5. Gramatika → `sheets.ts`, priče → `stories.ts`
 
 - **Priče:** praznina je `{opcija|točna*|opcija::objašnjenje}`. Rečenice neka završavaju s `. ! ?` jer čitač čita rečenicu po rečenicu.
+  Ako bi i druga opcija bila točna, dodaj kratku rečenicu konteksta u tekst (ne zagrade: tekst se čita naglas i koristi za diktat).
 - **Gramatika:** HTML blokovi su opisani na vrhu `a1.1/sheets.ts`: `formula`, tablica `para`, `rules` (pravilo + primjer), `words` (riječi kao oblačići).
   Španjolski primjeri idu u `<i>…</i>` i tada se izgovaraju na dodir.
 
@@ -87,4 +112,7 @@ U Ajustes → Nivel korisnik bira jednu ili više razina («Todos» = sve). Razi
 npm test
 ```
 
-Testovi u `src/content/content.test.ts` hvataju duplikate, krive id-jeve satova, praznine bez točnog odgovora i slično.
+Testovi u `src/content/content.test.ts` hvataju duplikate, krive id-jeve satova, nepoznata polja na karticama, pravila bez
+jedne praznine ili s dvije iste opcije, krive zapise u `renamed.ts` i slično. Dvosmislenost ne mogu uhvatiti, zato je korak 0 važan.
+
+Korisnici mogu prijaviti grešku u zadatku zastavicom u vježbi. Prijave stižu kao GitHub issue s oznakom `reporte`.

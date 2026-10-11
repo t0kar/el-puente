@@ -49,6 +49,10 @@ export const imperative = (v: Verb, who: "tu" | "usted") => {
   const g = v.inf.slice(-2),
     stem = v.inf.slice(0, -2);
   if (who === "tu") return { form: stem + (g === "ar" ? "a" : "e"), formula: `tú = oblik za él: ${esc(stem)} + <u>${g === "ar" ? "a" : "e"}</u>` };
-  return { form: stem + (g === "ar" ? "e" : "a"), formula: `usted: ${esc(stem)} + <u>${g === "ar" ? "e" : "a"}</u> (zamjena samoglasnika)` };
+  // spelling keeps the sound before e: pagar → pague, buscar → busque, cruzar → cruce
+  const fix =
+    g === "ar" ? (/g$/.test(stem) ? stem + "u" : /c$/.test(stem) ? stem.slice(0, -1) + "qu" : /z$/.test(stem) ? stem.slice(0, -1) + "c" : stem) : stem;
+  const note = fix !== stem ? ` (pravopis: ${esc(stem.slice(-1))} → ${esc(fix.slice(stem.length - 1))} ispred e)` : " (zamjena samoglasnika)";
+  return { form: fix + (g === "ar" ? "e" : "a"), formula: `usted: ${esc(fix)} + <u>${g === "ar" ? "e" : "a"}</u>${note}` };
 };
 export const verbGroup = (v: Verb) => (v.irr ? "irr" : v.type ? v.type : v.refl ? "refl" : "reg");

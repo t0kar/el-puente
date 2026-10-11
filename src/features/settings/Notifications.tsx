@@ -2,7 +2,18 @@ import { useEffect, useState } from "react";
 import { Ic } from "../../components/icons";
 import { Seg } from "../../components/Seg";
 import { useSync } from "../../hooks/useSync";
-import { deviceSubscribed, disableOnDevice, enableOnDevice, needsInstall, permission, pushConfigured, pushSupported, testNotification } from "../../lib/push";
+import {
+  deviceSubscribed,
+  disableOnDevice,
+  enableOnDevice,
+  needsInstall,
+  permission,
+  pushConfigured,
+  pushSupported,
+  requestServerTest,
+  syncPushDevice,
+  testNotification,
+} from "../../lib/push";
 import { setSetting, useSettings } from "../../lib/store";
 import { Row } from "./SettingsLayout";
 
@@ -19,7 +30,7 @@ export const Notifications = () => {
   const [busy, setBusy] = useState(false);
   const [msg, setMsg] = useState("");
   useEffect(() => {
-    deviceSubscribed().then(setHere);
+    syncPushDevice().then(deviceSubscribed).then(setHere);
   }, [user]);
 
   if (!pushConfigured)
@@ -60,7 +71,8 @@ export const Notifications = () => {
   };
   const toggle = (k: Kind, v: boolean) =>
     run(async () => {
-      if (v && !here) {
+      // always re-save when switching on: repairs a subscription the server dropped even if the browser still has one
+      if (v) {
         const e = await enableOnDevice();
         if (e) return e;
       }
@@ -134,7 +146,24 @@ export const Notifications = () => {
         <button className="btn ghost" disabled={busy} onClick={() => run(testNotification)}>
           <Ic.bell /> Probar notificación
         </button>
+        {here && (
+          <button
+            className="btn ghost"
+            disabled={busy}
+            onClick={() =>
+              run(async () => {
+                const e = await requestServerTest();
+                return e || "Zahtjev poslan. Prava obavijest sa servera stiže za 15–30 minuta. Ako ne stigne, javi nam (Otros → Reportar un problema).";
+              })
+            }
+          >
+            <Ic.bell /> Probar desde el servidor
+          </button>
+        )}
       </div>
+      <p className="hint" lang="hr">
+        «Probar notificación» samo pokazuje izgled na ovom uređaju. «Probar desde el servidor» provjerava cijeli put: servis → Apple/Google → tvoj uređaj.
+      </p>
       {(msg || status) && (
         <p className="hint" role="status" lang="hr">
           {msg || status}

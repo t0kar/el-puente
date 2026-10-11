@@ -39,7 +39,24 @@ describe("mergeStates (sync between devices)", () => {
     expect(m.custom.w2.es).toBe("el gorro");
   });
 
-  it("takes settings from the device that changed last and the newest seen update", () => {
+  it("takes each setting from the device that changed it last", () => {
+    const def = defaultState().settings;
+    const a = st({ updatedAt: 500, settings: { ...def, goal: 30, remind: { on: true, time: "20:00" } }, settingsAt: { goal: 100, remind: 300 } });
+    const b = st({ updatedAt: 900, settings: { ...def, goal: 100, remind: { on: false, time: "19:00" } }, settingsAt: { goal: 200 } });
+    const m = mergeStates(a, b);
+    expect(m.settings.goal).toBe(100);
+    expect(m.settings.remind).toEqual({ on: true, time: "20:00" });
+    expect(m.settingsAt).toEqual({ goal: 200, remind: 300 });
+  });
+
+  it("a fresh device that practised later doesn't reset settings changed elsewhere (old data without timestamps)", () => {
+    const def = defaultState().settings;
+    const phone = st({ updatedAt: 100, settings: { ...def, remind: { on: true, time: "21:00" } } });
+    const freshApp = st({ updatedAt: 999, days: { "2026-10-11": 10 } });
+    expect(mergeStates(freshApp, phone).settings.remind).toEqual({ on: true, time: "21:00" });
+  });
+
+  it("without timestamps on either side takes settings from the device that changed last and the newest seen update", () => {
     const a = st({ updatedAt: 1, seenUpdate: "2026-10-07", settings: { ...defaultState().settings, goal: 30 } });
     const b = st({ updatedAt: 2, seenUpdate: "2026-10-02", settings: { ...defaultState().settings, goal: 100 } });
     const m = mergeStates(a, b);
@@ -63,5 +80,16 @@ describe("normalize (loading saved data)", () => {
     expect(getState().settings.dir).toBe("es");
     expect(getState().settings.notifyContent).toBe(true);
     expect(getState().settings.remind).toEqual({ on: false, time: "19:00" });
+  });
+});
+
+describe("renamed cards", () => {
+  it("keeps progress of a card whose Spanish text was corrected", async () => {
+    const { RENAMED } = await import("../content/renamed");
+    const [from, to] = Object.entries(RENAMED)[0] ?? [];
+    if (!from) return; // nothing renamed yet
+    replaceState({ ...defaultState(), cards: { [from]: { i: 3, e: 2.5, r: 2, l: 0, d: 0, t: 1 } } });
+    expect(getState().cards[to]?.i).toBe(3);
+    expect(getState().cards[from]).toBeUndefined();
   });
 });

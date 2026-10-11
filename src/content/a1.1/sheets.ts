@@ -26,8 +26,9 @@ export const SHEETS: Sheet[] = [
 <p class="sub">Samo <b>yo</b> je nepravilan:</p>
 <ul class="rules">
 <li><code>salir</code><span><i>salgo</i></span></li><li><code>hacer</code><span><i>hago</i></span></li>
-<li><code>saber</code><span><i>sé</i></span></li><li><code>decir</code><span><i>digo</i></span></li>
-</ul>`},
+<li><code>saber</code><span><i>sé</i></span></li><li><code>poner</code><span><i>pongo</i></span></li>
+</ul>
+<p class="hint"><b>decir</b>: <i>digo</i>, ali i e→i: <i>dices, dice, dicen</i> (nosotros: <i>decimos</i>).</p>`},
 {t:"Verbos reflexivos", mark:"pink", html:`
 <p class="formula">levantar<u>se</u> → <b>me</b> + levant<b>o</b></p>
 <ol class="steps"><li>Makni <b>-se</b>.</li><li>Konjugiraj normalno.</li><li>Dodaj zamjenicu ispred.</li></ol>
@@ -66,7 +67,7 @@ export const SHEETS: Sheet[] = [
 <li><code>-és → -esa</code><span><i>francés</i> → <i>francesa</i></span></li>
 <li><code>-án → -ana</code><span><i>alemán</i> → <i>alemana</i></span></li>
 </ul>
-<p class="hint">Isti oblik za oba roda: <b>-ista</b> (periodista), <b>-e / -ante / -ente</b> (estudiante), <b>-a</b> (croata, belga), <b>-í</b> (marroquí).</p>
+<p class="hint">Isti oblik za oba roda: <b>-ista</b> (periodista), <b>-e / -ante / -ente</b> (estudiante; ali <i>dependiente → dependienta</i>), <b>-a</b> (croata, belga), <b>-í</b> (marroquí).</p>
 <p class="sub">Množina</p>
 <ul class="rules">
 <li><code>samoglasnik + s</code><span><i>libro</i> → <i>libros</i></span></li>
@@ -97,8 +98,8 @@ export const SHEETS: Sheet[] = [
 <p class="hint">primer / tercer ispred muške imenice: <i>el primer piso</i>, <i>el tercer piso</i>.</p>`},
 {t:"La hora", mark:"blue", html:`
 <ul class="rules">
-<li><code>1:xx</code><span><i>Es la una…</i></span></li>
-<li><code>ostalo</code><span><i>Son las…</i></span></li>
+<li><code>la una</code><span><i>Es la una…</i> · 12:45 = <i>Es la una menos cuarto</i></span></li>
+<li><code>ostalo</code><span><i>Son las…</i> · 1:45 = <i>Son las dos menos cuarto</i></span></li>
 </ul>
 <div class="tbl"><table class="para"><tbody>
 <tr><th>:00</th><td><i>en punto</i></td><th>:15</th><td><i>y cuarto</i></td></tr>
@@ -116,7 +117,7 @@ export const SHEETS: Sheet[] = [
 <ul class="rules">
 <li><code>16–29</code><span>jedna riječ · <i>dieciséis</i>, <i>veintidós</i></span></li>
 <li><code>31–99</code><span>desetica + y + jedinica · <i>treinta y dos</i></span></li>
-<li><code>100</code><span><i>cien</i> · 101+ = <i>ciento…</i></span></li>
+<li><code>100</code><span><i>cien</i> · 101–199 = <i>ciento…</i> (<i>ciento uno</i>)</span></li>
 <li><code>500 · 700 · 900</code><span><i>quinientos</i>, <i>setecientos</i>, <i>novecientos</i></span></li>
 </ul>
 <p class="hint">"y" stoji samo između desetica i jedinica: ciento <b>treinta y dos</b>, dos mil <b>trescientos cincuenta y dos</b>.</p>`},
@@ -124,7 +125,7 @@ export const SHEETS: Sheet[] = [
 <div class="tbl"><table class="para"><thead><tr><th></th><th>-ar</th><th>-er</th><th>-ir</th></tr></thead><tbody>
 <tr><th>tú <small>= oblik za él</small></th><td><i>corta</i></td><td><i>come</i></td><td><i>abre</i></td></tr>
 <tr><th>usted <small>= zamijeni samoglasnik</small></th><td><i>corte</i></td><td><i>coma</i></td><td><i>abra</i></td></tr></tbody></table></div>
-<p class="hint">Za naredbe, upute, molbe i preporuke.</p>`},
+<p class="hint">Za naredbe, upute, molbe i preporuke. Pravilo za tú vrijedi samo za potvrdne naredbe (niječno: <i>no cortes</i>); usted ostaje isti: <i>no corte</i>.</p>`},
 {t:"Pronunciación", mark:"green", html:`
 <div class="tbl"><table class="para"><thead><tr><th>slovo</th><th>izgovor</th><th>primjer</th></tr></thead><tbody>
 <tr><th>c + a/o/u</th><td>k</td><td><i>casa</i></td></tr>
@@ -133,7 +134,7 @@ export const SHEETS: Sheet[] = [
 <tr><th>g + e/i</th><td>h</td><td><i>gente</i></td></tr>
 <tr><th>gue / gui</th><td>ge / gi</td><td><i>guitarra</i></td></tr>
 <tr><th>que / qui</th><td>ke / ki</td><td><i>queso</i></td></tr>
-<tr><th>h</th><td>tiho</td><td><i>hotel</i></td></tr>
+<tr><th>h</th><td>ne čita se</td><td><i>hotel</i></td></tr>
 <tr><th>j</th><td>h</td><td><i>jefe</i></td></tr>
 <tr><th>ll</th><td>j</td><td><i>llamo</i></td></tr>
 <tr><th>ñ</th><td>nj</td><td><i>España</i></td></tr>
@@ -141,7 +142,7 @@ export const SHEETS: Sheet[] = [
 {t:"¿Qué o cuál?", mark:"green", html:`
 <ul class="rules">
 <li><code>qué + imenica</code><span><i>¿Qué libro lees?</i></span></li>
-<li><code>qué + glagol</code><span><i>¿Qué haces?</i></span></li>
-<li><code>cuál + glagol</code><span><i>¿Cuál es tu número?</i></span></li>
+<li><code>qué + glagol</code><span>što? · <i>¿Qué haces?</i> · definicija: <i>¿Qué es una tumbona?</i></span></li>
+<li><code>cuál + es / son</code><span>koji? (podatak, izbor) · <i>¿Cuál es tu número?</i> (ne: <i>¿Qué es tu número?</i>)</span></li>
 </ul>`}
 ];

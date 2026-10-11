@@ -12,7 +12,7 @@ const all = <T,>(pick: (c: LevelContent, lvl: LevelId) => T[]) => LEVELS.flatMap
 
 export const TOPICS: Topic[] = all((c, lvl) => c.topics.map(t => ({ ...t, lvl })));
 export const VERBS: Verb[] = all((c, lvl) => c.verbs.map(v => ({ ...v, lvl })));
-export const RULES: Rule[] = all((c, lvl) => c.rules.map(r => [r[0], r[1], r[2], r[3], r[4], lvl] as Rule));
+export const RULES: Rule[] = all((c, lvl) => c.rules.map(r => ({ ...r, lvl })));
 export const STORIES: Story[] = all((c, lvl) => c.stories.map(s => ({ ...s, lvl })));
 export const SHEETS: Sheet[] = all((c, lvl) => c.sheets.map(s => ({ ...s, lvl })));
 /** class log, oldest first (see updates.json) */

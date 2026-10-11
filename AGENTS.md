@@ -19,7 +19,8 @@ No router library, no state library, no UI kit — on purpose (see "Decisions").
 | `npm run build`                   | Production build into `dist/` (`BASE=/` for root hosting)                                |
 
 Which checks: any code change → `npm run check`. CSS/UI change → also look at it in the browser at 375 px and desktop, light and dark.
-Content-only change → `npm test` (content guards) is the minimum. Workflow/script change → `npm test` + run the script without secrets (it must exit cleanly).
+Content-only change → `npm test` (content guards) is the minimum, and every item is checked for correctness first, including what
+comes from class material (see "Verify everything from source material" in `src/content/AGENTS.md`). Workflow/script change → `npm test` + run the script without secrets (it must exit cleanly).
 
 ## Architecture
 
@@ -53,6 +54,8 @@ Every `update()` saves to localStorage and (when signed in) schedules a Firestor
 - **New setting:** field + default in `lib/types.ts` / `defaultSettings()` (old saved data gets defaults via `normalize()`;
   migrate changed shapes there and add a test in `lib/store.test.ts`), then a `<Row>` in `features/settings/Settings.tsx`.
 - **New synced state:** add to `AppState`, `defaultState()`, the copy in `update()`, and a merge rule in `mergeStates()` + test.
+- **Harder-than-level content:** `x: "A2" | "B1" | "B2"` on cards/verbs/rules; `keep()` in `lib/level.ts` and `cards()` filter it
+  when `settings.advanced` is off; `<LevelPill>` shows it.
 - **Shared component:** only when a second feature needs it → `components/`. Hooks shared by 2+ → `hooks/`.
 - **Pure logic:** `lib/` (no React, no DOM where avoidable) with a `*.test.ts` next to it.
 - **Constants:** keep local unless shared. Design values → `styles/tokens.css`. Course data → `src/content/`.
@@ -94,8 +97,16 @@ Every `update()` saves to localStorage and (when signed in) schedules a Firestor
 - **localStorage keys** start with `el-puente-` — don't rename them (users would lose data).
 - **Speech:** browser TTS differs per device; `onboundary` (word tracking) is missing on some voices; Chrome cuts long utterances —
   that's why the reader speaks sentence by sentence (`lib/speech.ts`, `hooks/useReader.ts`).
-- **Push:** senders are `scripts/remind.mjs` (cron, every 15 min) and `scripts/notify-content.mjs` (after deploy). Decision logic is
-  pure and tested; `runSender` in `scripts/lib/push.mjs` does I/O. iOS needs the app installed to the home screen.
+- **Push:** senders are `scripts/remind.mjs` (cron, every 15 min; also sends a test push when a device sets `testAt`) and
+  `scripts/notify-content.mjs` (after deploy). Decision logic is pure and tested; `runSender` in `scripts/lib/push.mjs` does I/O and
+  logs per-device errors; `runMain` makes the run fail when every push failed. The app re-saves its subscription on start
+  (`syncPushDevice` in `lib/push.ts`). iOS needs the app installed to the home screen and a real `VAPID_SUBJECT`.
+- **Error reports:** `lib/report.ts` writes `reports/{id}` (create-only rule); `scripts/report-issues.mjs` (hourly workflow) turns
+  them into GitHub issues labelled `reporte`. Optional `VITE_REPORT_EMAIL` = mailto fallback for signed-out users.
+- **Settings sync is per key:** `setSetting` stamps `settingsAt[k]`; `mergeStates` takes each setting from the newer stamp. Change
+  settings only through `setSetting`, otherwise the change can be lost on sync.
+- **Sessions always end:** a wrong answer comes back once (`_retry`); missed again, it moves on — cards stay due (SRS), rules and
+  verbs go to `lib/missed.ts` (local `el-puente-missed`) and come first next session. Question `key`s identify items for this and reports.
 - The embedded/preview browsers may not support service workers or audio; verify those on a real phone.
 
 ## Decisions (and when to revisit)

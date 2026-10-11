@@ -1,10 +1,11 @@
-import { useState } from "react";
+import { useCallback, useState } from "react";
 import { resetProgress, setSetting, useSettings } from "../../lib/store";
 import { speak } from "../../lib/speech";
 import { LEVELS, levelHasContent } from "../../lib/level";
 import { customCards } from "../../lib/cards";
 import { Ic } from "../../components/icons";
 import { Seg } from "../../components/Seg";
+import { ReportDialog } from "../../components/ReportDialog";
 import { useNav } from "../../app/navigation";
 import { Account } from "./Account";
 import { Backup } from "./Backup";
@@ -18,6 +19,8 @@ export const Settings = () => {
   const s = useSettings();
   const { go } = useNav();
   const [confirm, setConfirm] = useState(false);
+  const [report, setReport] = useState(false);
+  const closeReport = useCallback(() => setReport(false), []);
   const mine = customCards().length;
   return (
     <section className="view">
@@ -71,6 +74,23 @@ export const Settings = () => {
         <Row title="Contenido" control={<LevelPicker />}>
           Koje razine vježbaš. «Todos» = sve izmiješano. Vrijedi za kartice, glagole, pravila, priče i chuletu. Tvoje riječi (Mis palabras) uvijek su uključene.
           {LEVELS.some(l => !levelHasContent(l.id)) && " Razine bez gradiva još su sive."}
+        </Row>
+        <Row
+          title="Expresiones avanzadas"
+          control={
+            <Seg
+              label="Expresiones avanzadas"
+              options={[
+                [true, "Mostrar"],
+                [false, "Ocultar"],
+              ]}
+              value={s.advanced}
+              onChange={v => setSetting("advanced", v)}
+            />
+          }
+        >
+          Na satu smo spomenuli i neke izraze teže od razine tečaja. U vježbama imaju žutu oznaku (npr. <b>B1</b>), a gradivo tečaja oznaku razine (<b>A1.1</b>
+          ). «Ocultar» ih izbacuje iz kartica, pravila i glagola.
         </Row>
       </Group>
       <Group title="Notificaciones" mark="pink">
@@ -234,6 +254,16 @@ export const Settings = () => {
           Enter = dalje · 1–4 = odgovor ili ocjena · razmak = okreni karticu.
         </Row>
         <Row
+          title="Reportar un problema"
+          control={
+            <button className="btn ghost" onClick={() => setReport(true)}>
+              <Ic.flag /> Reportar
+            </button>
+          }
+        >
+          Greška u aplikaciji ili gradivu? Javi nam. Za grešku u određenom zadatku dodirni zastavicu gore desno u samom zadatku.
+        </Row>
+        <Row
           title="Borrar progreso"
           control={
             confirm ? (
@@ -261,6 +291,7 @@ export const Settings = () => {
           Briše kartice, bodove i rekorde na svim uređajima. Postavke ostaju.
         </Row>
       </Group>
+      {report && <ReportDialog ctx={{ kind: "general" }} onClose={closeReport} />}
     </section>
   );
 };

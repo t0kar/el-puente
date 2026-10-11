@@ -1,6 +1,7 @@
-import { cards, TOPIC_BY_K } from "./cards";
+import { cardLevel, cards, TOPIC_BY_K } from "./cards";
 import { LAST_UPDATE, lastClassCards } from "./updates";
-import { activeRules, activeStories, activeVerbs } from "./level";
+import { activeRules, activeStories, activeVerbs, itemLevel } from "./level";
+import { missedFirst } from "./missed";
 import { getState } from "./store";
 import { conj, imperative, verbGroup, PERSONS } from "./verbs";
 import { num, timeES } from "./numbers";
@@ -11,7 +12,7 @@ import { pick, shuffle } from "./util";
 export const flipQ = (card: Card, cram = false): FlipQ => {
   const d = getState().settings.dir;
   const dir = d === "mix" ? (Math.random() < 0.5 ? "es" : "hr") : d;
-  return { kind: "flip", card, dir, cram, tag: TOPIC_BY_K[card.T].t };
+  return { kind: "flip", card, dir, cram, tag: TOPIC_BY_K[card.T].t, key: "card:" + card.id, lvl: cardLevel(card), hard: !!card.x };
 };
 export const vocabMC = (card: Card, pool: Card[] = cards()): MCQ => {
   const others = shuffle(pool.filter(c => c.id !== card.id && c.hr !== card.hr)).slice(0, 3);
@@ -25,14 +26,20 @@ export const vocabMC = (card: Card, pool: Card[] = cards()): MCQ => {
     options: opts.map(o => o.hr),
     correct: opts.indexOf(card),
     explain: card.es + " = " + card.hr,
+    key: "card:" + card.id,
+    lvl: cardLevel(card),
+    hard: !!card.x,
   };
 };
+export const verbKey = (v: Verb) => "verb:" + v.inf;
 const verbQ = (v: Verb, mode?: "type" | "mc"): Question => {
   const sel = mode || getState().settings.verbMode;
+  const meta = { key: verbKey(v), lvl: itemLevel(v), hard: !!v.x };
   if (v._imp) {
     const who = pick(["tu", "usted"] as const);
     const r = imperative(v, who);
     const base = {
+      ...meta,
       tag: "Imperativo · " + (who === "tu" ? "tú" : "usted"),
       prompt: `${v.inf} → ¡(${who === "tu" ? "tú" : "usted"}) …!`,
       sub: v.hr,
@@ -49,6 +56,7 @@ const verbQ = (v: Verb, mode?: "type" | "mc"): Question => {
   const c = conj(v, p);
   const g = verbGroup(v);
   const base = {
+    ...meta,
     tag: "Fórmula · " + ({ reg: "regular", irr: "irregular", refl: "reflexivo" } as Record<string, string>)[g] || g.replace("-", "→"),
     prompt: `${v.inf} → ${PERSONS[p]}`,
     sub: v.hr,
@@ -65,16 +73,23 @@ const verbQ = (v: Verb, mode?: "type" | "mc"): Question => {
   }
   return { ...base, kind: "type", answers: [c.form], strict: true };
 };
+export const ruleKey = (r: Rule) => "rule:" + r.q + "|" + r.o[r.a]; // several rules share a prompt ("Ella es ___.")
 const ruleQ = (r: Rule): MCQ => ({
   kind: "mc",
   tag: "Regla rápida",
-  prompt: r[0],
-  speak: r[0].replace("___", r[1][r[2]]),
-  options: r[1].slice(),
-  correct: r[2],
-  explain: r[3],
+  prompt: r.q,
+  speak: r.q.replace("___", r.o[r.a]).replace(/\s*\([^)]*\)/g, ""),
+  options: r.o.slice(),
+  correct: r.a,
+  explain: r.hr,
   shuffle: true,
+  key: ruleKey(r),
+  lvl: itemLevel(r),
+  hard: !!r.x,
 });
+/** rules and verbs missed twice in an earlier session come first */
+const rulesFirst = () => missedFirst(shuffle(activeRules()), ruleKey);
+const verbsFirst = () => missedFirst(shuffle(activeVerbs()), verbKey);
 
 const numberQ = (kind?: "tiles" | "listen" | "calc"): Question => {
   kind = kind || pick(["tiles", "listen", "calc", "tiles"] as const);
@@ -201,7 +216,7 @@ const sentencePool = (): string[] => {
     .filter(c => c.es.split(" ").length >= 3 && !c.es.includes("...") && !/[=≠/]/.test(c.es))
     .map(c => c.es.replace(/\s*\([^)]*\)/g, ""));
   const fromRules = activeRules()
-    .map(r => r[0].replace("___", r[1][r[2]]))
+    .map(r => r.q.replace("___", r.o[r.a]))
     .filter(s => !s.includes("(") && !s.includes("—"));
   const fromStories = activeStories().flatMap(s =>
     s.text
@@ -257,10 +272,10 @@ export const dailySession = (): SessionSpec => {
       .slice(0, 8)
       .map(c => flipQ(c, true));
   const others = [
-    ...shuffle(activeVerbs())
+    ...verbsFirst()
       .slice(0, 4)
       .map(v => verbQ(v)),
-    ...shuffle(activeRules()).slice(0, 3).map(ruleQ),
+    ...rulesFirst().slice(0, 3).map(ruleQ),
     numberQ(),
     timeQ(),
     dictationQ(),
@@ -290,11 +305,8 @@ export const beforeClassSession = (): SessionSpec => {
   const u = LAST_UPDATE?.id;
   const vs = activeVerbs(),
     rs = activeRules();
-  const verbs = (u ? vs.filter(v => v.u === u) : [])
-    .concat(shuffle(vs))
-    .slice(0, 3)
-    .map(v => verbQ(v, "mc"));
-  const rules = (u ? rs.filter(r => r[4] === u) : []).concat(shuffle(rs)).slice(0, 3).map(ruleQ);
+  const verbs = [...new Set((u ? vs.filter(v => v.u === u) : []).concat(verbsFirst()))].slice(0, 3).map(v => verbQ(v, "mc"));
+  const rules = [...new Set((u ? rs.filter(r => r.u === u) : []).concat(rulesFirst()))].slice(0, 3).map(ruleQ);
   return { title: "Antes de clase", questions: interleave(qs, [...verbs, ...rules]), again: beforeClassSession, back: "hoy" };
 };
 export const cardsSession = (topics: string[] | null, title = "Tarjetas", back = "tarjetas"): SessionSpec => {
@@ -311,7 +323,7 @@ export const verbSession = (pool: Verb[], mode?: "type" | "mc", title = "Fórmul
 export const gameSessions = {
   numbers: (): SessionSpec => ({ title: "Números", questions: Array.from({ length: 10 }, () => numberQ()), again: gameSessions.numbers, back: "juegos" }),
   clock: (): SessionSpec => ({ title: "La hora", questions: Array.from({ length: 10 }, timeQ), again: gameSessions.clock, back: "juegos" }),
-  rules: (): SessionSpec => ({ title: "Reglas rápidas", questions: shuffle(activeRules()).slice(0, 12).map(ruleQ), again: gameSessions.rules, back: "juegos" }),
+  rules: (): SessionSpec => ({ title: "Reglas rápidas", questions: rulesFirst().slice(0, 12).map(ruleQ), again: gameSessions.rules, back: "juegos" }),
   verbs: (): SessionSpec => ({
     title: "Fórmula exprés",
     questions: Array.from({ length: 10 }, () => verbQ(pick(activeVerbs()), "mc")),
