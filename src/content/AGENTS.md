@@ -39,6 +39,8 @@ Class notes, board photos and course books are **input, not truth**. Check every
   (see `lib/check.ts`, `lib/speech.ts`).
 - Verbs: regular `{inf, hr}`; stem change `type: "o-ue" | "e-ie" | "e-i" | "u-ue"`; reflexive `refl: true`; irregular `irr: [6 forms]`
   plus `note` (put a vowel change like `e→ie` in the note so it shows up in la bota).
+  Imperatives that can't be derived (irregular `ven/venga`, reflexive `dúchate/dúchese`): `imp: [tú, usted]` — only verbs that are
+  regular or have `imp` join the Imperativo drill.
 - Rules: `{q: "sentence with one ___", o: [options], a: correct index, hr: "Croatian explanation", u?, x?}`. Notes in `(…)` in `q`
   aren't spoken. Verbs take `x` too.
 - Stories: gap = `{option|correct*|option::Croatian explanation}`, exactly one `*`. Keep sentences ending in `. ! ?` so the

@@ -38,6 +38,8 @@ export interface Verb {
   type?: StemType;
   refl?: boolean;
   irr?: string[];
+  /** imperative [tú, usted] when it can't be derived (irregular, reflexive), e.g. ven / venga */
+  imp?: [string, string];
   note?: string;
   u?: string;
   x?: Cefr;

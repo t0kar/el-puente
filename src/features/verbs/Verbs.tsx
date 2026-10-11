@@ -36,7 +36,7 @@ export const Verbs = () => {
   const VERBS = activeVerbs();
   const pool = () => {
     let vs: Verb[] = VERBS.filter(v => sel.includes(verbGroup(v)) || (sel.includes("refl") && v.refl));
-    if (sel.includes("imp")) vs = vs.concat(VERBS.filter(v => !v.irr && !v.type && !v.refl).map(v => ({ ...v, _imp: true })));
+    if (sel.includes("imp")) vs = vs.concat(VERBS.filter(v => v.imp || (!v.irr && !v.type && !v.refl)).map(v => ({ ...v, _imp: true })));
     return vs;
   };
   const v = VERBS[vi] || VERBS[0],
