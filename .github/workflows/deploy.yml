@@ -16,6 +16,8 @@ concurrency:
 
 jobs:
   build:
+    # GitHub Pages is the default host; set the repo variable HOSTING=firebase to switch (deploy-firebase.yml)
+    if: ${{ vars.HOSTING != 'firebase' }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -24,6 +26,7 @@ jobs:
           node-version: 22
           cache: npm
       - run: npm ci
+      - run: npm run check
       - run: npm run build
         env:
           BASE: /${{ github.event.repository.name }}/
@@ -32,6 +35,7 @@ jobs:
           VITE_FIREBASE_PROJECT_ID: ${{ vars.VITE_FIREBASE_PROJECT_ID }}
           VITE_FIREBASE_APP_ID: ${{ vars.VITE_FIREBASE_APP_ID }}
           VITE_VAPID_PUBLIC_KEY: ${{ vars.VITE_VAPID_PUBLIC_KEY }}
+          VITE_REPORT_EMAIL: ${{ vars.VITE_REPORT_EMAIL }}
       - uses: actions/upload-pages-artifact@v3
         with:
           path: dist

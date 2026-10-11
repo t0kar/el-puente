@@ -1,5 +1,11 @@
 node_modules
 dist
+coverage
 .env.local
 *.log
 .DS_Store
+# TypeScript incremental build cache
+*.tsbuildinfo
+# service-account keys must never be committed
+*serviceAccount*.json
+*-firebase-adminsdk-*.json

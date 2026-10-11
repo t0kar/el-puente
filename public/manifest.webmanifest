@@ -1,2 +1,11 @@
-{ "name": "Cruza el Puente", "short_name": "Cruza", "id": "./", "start_url": "./", "scope": "./", "display": "standalone", "background_color": "#fbfaf5", "theme_color": "#f26b1d",
-  "icons": [{ "src": "favicon.svg", "sizes": "any", "type": "image/svg+xml" }] }
+{
+  "name": "Cruza el Puente",
+  "short_name": "Cruza",
+  "id": "./",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#fbfaf5",
+  "theme_color": "#f26b1d",
+  "icons": [{ "src": "favicon.svg", "sizes": "any", "type": "image/svg+xml" }]
+}

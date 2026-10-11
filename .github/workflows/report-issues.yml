@@ -1,0 +1,40 @@
+name: Error reports → issues
+
+# Every hour: turn new error reports from the app (Firestore `reports`) into GitHub issues labelled "reporte".
+# GitHub then e-mails the repo owner. Needs the FIREBASE_SERVICE_ACCOUNT secret (same as the reminders).
+on:
+  schedule:
+    - cron: "7 * * * *"
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: "Dry run (print, don't create issues)"
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+  issues: write
+
+concurrency:
+  group: report-issues
+  cancel-in-progress: false
+
+jobs:
+  issues:
+    if: ${{ vars.VITE_FIREBASE_PROJECT_ID != '' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci --ignore-scripts --no-audit --no-fund
+      - run: node scripts/report-issues.mjs
+        env:
+          FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+          DRY_RUN: ${{ inputs.dry_run && '1' || '' }}

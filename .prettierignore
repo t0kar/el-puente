@@ -1,0 +1,5 @@
+dist
+node_modules
+package-lock.json
+# course data: long one-line entries are easier to edit and diff unwrapped
+src/content/**/*.ts
